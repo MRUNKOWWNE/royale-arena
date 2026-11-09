@@ -123,72 +123,133 @@ canvas.addEventListener("pointerdown",e=>{
  updateStats();
 });
 
+
 function drawArena(){
-  // Rich grass background
-  const grass=ctx.createLinearGradient(0,0,W,H);
-  grass.addColorStop(0,"#91c75d");
-  grass.addColorStop(0.5,"#76b34c");
-  grass.addColorStop(1,"#548e3b");
+  // Lush grass background
+  const grass=ctx.createLinearGradient(0,0,600,1000);
+  grass.addColorStop(0,"#9bcf65");
+  grass.addColorStop(.5,"#72ae49");
+  grass.addColorStop(1,"#548a3b");
   ctx.fillStyle=grass;
   ctx.fillRect(0,0,W,H);
 
-  // Arena ground
-  ctx.fillStyle="#83bd52";
-  ctx.fillRect(40,0,520,H);
-
-  // Subtle battlefield paths
-  ctx.fillStyle="rgba(222,198,132,0.13)";
-  ctx.fillRect(270,0,60,1000);
-
-  // Grass details
-  for(let i=0;i<180;i++){
-    const x=(i*97)%600;
-    const y=(i*173)%1000;
-    ctx.fillStyle=i%2?"rgba(42,100,38,.25)":"rgba(220,238,145,.3)";
+  // Grass texture
+  for(let i=0;i<350;i++){
+    const x=(i*137)%600;
+    const y=(i*193)%1000;
+    ctx.strokeStyle=i%2?"#a8d76c":"#4e8c38";
+    ctx.lineWidth=1.5;
     ctx.beginPath();
-    ctx.ellipse(x,y,3,2,0,0,Math.PI*2);
+    ctx.moveTo(x,y);
+    ctx.lineTo(x+3,y-5);
+    ctx.stroke();
+  }
+
+  // Stone battlefield paths
+  ctx.fillStyle="#a99a77";
+  ctx.fillRect(280,0,40,1000);
+
+  // Decorative path stones
+  for(let i=0;i<35;i++){
+    const y=i*30;
+    ctx.fillStyle=i%2?"#c6b68f":"#948666";
+    ctx.fillRect(283,y,16,24);
+  }
+
+  // Flower decorations
+  for(let i=0;i<65;i++){
+    const x=(i*113)%600;
+    const y=(i*157)%1000;
+
+    ctx.fillStyle="#398044";
+    ctx.beginPath();
+    ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle=["#fff0a1","#f8b6c9","#fff"][i%3];
+    ctx.beginPath();
+    ctx.arc(x+2,y-2,2.5,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // Small trees
+  function tree(x,y){
+    ctx.fillStyle="#76502d";
+    ctx.fillRect(x-4,y,8,17);
+
+    ctx.fillStyle="#286b35";
+    ctx.beginPath();
+    ctx.arc(x,y-5,15,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#499c45";
+    ctx.beginPath();
+    ctx.arc(x-5,y-10,9,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  [
+    [45,90],[545,100],[55,390],[540,380],
+    [45,650],[555,650],[65,950],[530,950]
+  ].forEach(p=>tree(p[0],p[1]));
+
+  // Decorative rocks
+  for(let i=0;i<24;i++){
+    const x=(i*173)%600;
+    const y=(i*239)%1000;
+
+    ctx.fillStyle="#817d70";
+    ctx.beginPath();
+    ctx.ellipse(x,y,6,4,0,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#aaa696";
+    ctx.beginPath();
+    ctx.arc(x-2,y-2,2,0,Math.PI*2);
     ctx.fill();
   }
 
   // River
   const water=ctx.createLinearGradient(0,470,0,550);
-  water.addColorStop(0,"#4db8d0");
-  water.addColorStop(0.5,"#278cad");
-  water.addColorStop(1,"#55bfd2");
+  water.addColorStop(0,"#70d4e7");
+  water.addColorStop(.5,"#258eae");
+  water.addColorStop(1,"#66c6df");
+
   ctx.fillStyle=water;
   ctx.fillRect(0,470,W,80);
 
+  // River banks
+  ctx.fillStyle="#c5ae7d";
+  ctx.fillRect(0,465,W,6);
+  ctx.fillRect(0,550,W,6);
+
   // Water reflections
-  for(let i=0;i<20;i++){
-    ctx.strokeStyle="rgba(220,250,255,.22)";
+  for(let i=0;i<35;i++){
+    const x=(i*79)%600;
+    const y=478+(i*17)%62;
+
+    ctx.strokeStyle="rgba(225,250,255,.45)";
     ctx.lineWidth=2;
     ctx.beginPath();
-    const x=(i*83)%600;
-    const y=480+(i*19)%60;
     ctx.moveTo(x,y);
-    ctx.lineTo(x+25,y-3);
+    ctx.lineTo(x+20,y);
     ctx.stroke();
   }
 
-  // Stone banks
-  ctx.fillStyle="#b4a078";
-  ctx.fillRect(0,465,W,5);
-  ctx.fillRect(0,550,W,5);
-
-  // Two detailed wooden bridges
+  // Wooden bridges
   function bridge(x){
-    ctx.fillStyle="#60432c";
+    ctx.fillStyle="#76502f";
     ctx.fillRect(x-3,458,76,102);
 
-    ctx.fillStyle="#b9864c";
+    ctx.fillStyle="#b77c43";
     ctx.fillRect(x,458,70,100);
 
-    for(let i=0;i<6;i++){
-      ctx.fillStyle=i%2?"#c99a60":"#a97642";
-      ctx.fillRect(x,460+i*16,70,14);
+    for(let i=0;i<7;i++){
+      ctx.fillStyle=i%2?"#c99458":"#a9713d";
+      ctx.fillRect(x,460+i*14,70,12);
     }
 
-    ctx.strokeStyle="#704a2e";
+    ctx.strokeStyle="#664127";
     ctx.lineWidth=4;
     ctx.strokeRect(x,458,70,100);
 
@@ -196,38 +257,28 @@ function drawArena(){
     ctx.strokeStyle="#754a2a";
     ctx.lineWidth=5;
     ctx.beginPath();
-    ctx.moveTo(x,460);
-    ctx.lineTo(x,452);
-    ctx.lineTo(x+70,452);
-    ctx.lineTo(x+70,460);
+    ctx.moveTo(x,458);
+    ctx.lineTo(x,450);
+    ctx.lineTo(x+70,450);
+    ctx.lineTo(x+70,458);
     ctx.stroke();
+
     ctx.beginPath();
-    ctx.moveTo(x,557);
+    ctx.moveTo(x,558);
     ctx.lineTo(x,566);
     ctx.lineTo(x+70,566);
-    ctx.lineTo(x+70,557);
+    ctx.lineTo(x+70,558);
     ctx.stroke();
   }
 
   bridge(205);
   bridge(325);
 
-  // Decorative stones
-  for(let i=0;i<35;i++){
-    const x=(i*131)%600;
-    const y=(i*211)%1000;
-    ctx.fillStyle="#9aaf64";
-    ctx.beginPath();
-    ctx.arc(x,y,2+(i%3),0,Math.PI*2);
-    ctx.fill();
-  }
-
-  // Enemy towers
+  // Castle positions
   tower(300,90,"🔴","ENEMY");
   tower(125,240,"🔴","TOWER");
   tower(475,240,"🔴","TOWER");
 
-  // Player towers
   tower(125,760,"🔵","TOWER");
   tower(475,760,"🔵","TOWER");
   tower(300,910,"🔵","YOU");
