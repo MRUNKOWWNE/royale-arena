@@ -128,15 +128,14 @@ function spawn(team,type,x){
   cool:0
  });
 }
+ 
 canvas.addEventListener("pointerdown",e=>{
  if(ended)return;
 
  const r=canvas.getBoundingClientRect();
-
  const x=(e.clientX-r.left)/r.width*W;
  const y=(e.clientY-r.top)/r.height*H;
 
- // Only allow deployment on the player's side
  if(y<570){
   message.textContent="Deploy troops below the river!";
   return;
@@ -149,18 +148,14 @@ canvas.addEventListener("pointerdown",e=>{
   return;
  }
 
- // Select left or right lane
  const lane=x<300?240:360;
-
  spawn("blue",selected,lane);
-
  energy-=cost;
 
  message.textContent=selected.toUpperCase()+" deployed!";
-
  updateStats();
 });
-
+ 
 function drawArena(){
   // Lush grass background
   const grass=ctx.createLinearGradient(0,0,600,1000);
@@ -378,9 +373,14 @@ function tower(x,y,team,label){
   // Castle door
   ctx.fillStyle="#68472e";
   ctx.beginPath();
-  ctx.roundRect(x-10,y+14,20,24,9,);
-  ctx.fill();
-
+ctx.moveTo(x-10,y+38);
+ctx.lineTo(x-10,y+23);
+ctx.quadraticCurveTo(x-10,y+14,x,y+14);
+ctx.quadraticCurveTo(x+10,y+14,x+10,y+23);
+ctx.lineTo(x+10,y+38);
+ctx.closePath();
+ctx.fill();
+ 
   // Team banner
   ctx.fillStyle=blue?"#237bd6":"#c83c42";
   ctx.fillRect(x-5,y-12,10,14);
