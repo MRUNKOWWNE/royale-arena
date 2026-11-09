@@ -311,15 +311,34 @@ function drawArena(){
   bridge(205);
   bridge(325);
 
-  // Castle positions
-  tower(300,90,"🔴","ENEMY KING");
-tower(240,240,"🔴","TOWER");
-tower(360,240,"🔴","TOWER");
+// Castle positions
+tower(300,90,"🔴","ENEMY KING");
 
-tower(240,760,"🔵","TOWER");
-tower(360,760,"🔵","TOWER");
-tower(300,910,"🔵","YOUR KING");
+// RED SIDE TOWERS
+const redLeft = towers.find(t => t.team === "red" && t.lane === 240);
+const redRight = towers.find(t => t.team === "red" && t.lane === 360);
+
+if(redLeft && redLeft.hp > 0){
+ tower(240,240,"🔴","TOWER");
 }
+
+if(redRight && redRight.hp > 0){
+ tower(360,240,"🔴","TOWER");
+}
+
+// BLUE SIDE TOWERS
+const blueLeft = towers.find(t => t.team === "blue" && t.lane === 240);
+const blueRight = towers.find(t => t.team === "blue" && t.lane === 360);
+
+if(blueLeft && blueLeft.hp > 0){
+ tower(240,760,"🔵","TOWER");
+}
+
+if(blueRight && blueRight.hp > 0){
+ tower(360,760,"🔵","TOWER");
+}
+
+tower(300,910,"🔵","YOUR KING");
 
 function tower(x,y,team,label){
   const blue=team==="🔵";
