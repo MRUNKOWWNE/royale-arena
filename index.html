@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Royale Arena</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101b2c;color:white;
+ font-family:Arial,sans-serif;text-align:center;
+ overflow:hidden;touch-action:manipulation
+}
+header{height:54px;background:#172b46;
+ display:flex;align-items:center;justify-content:center;
+ font-weight:bold;letter-spacing:2px;font-size:20px}
+#stats{display:flex;justify-content:space-around;
+ padding:8px;background:#203958;font-weight:bold}
+canvas{display:block;width:100%;height:calc(100dvh - 238px);
+ background:#75a94d;touch-action:none}
+#cards{height:112px;display:flex;justify-content:center;
+ gap:7px;padding:8px;background:#172b46}
+.card{flex:1;max-width:90px;border:2px solid #8299b4;
+ border-radius:9px;background:#294365;color:white;
+ font-weight:bold;font-size:12px;padding:6px 2px}
+.card b{display:block;font-size:25px;margin:4px}
+.card small{color:#ffd65c}
+.card.selected{border:3px solid #ffe15b;background:#42648e}
+#message{height:30px;background:#101b2c;padding:6px}
+button{cursor:pointer}
+#restart{background:#f5c94b;border:0;border-radius:8px;
+ padding:10px 20px;font-weight:bold;margin:4px}
+</style>
+</head>
+<body>
+<header>⚔ ROYALE ARENA</header>
+<div id="stats">
+ <span>🔵 You: <span id="hp">1000</span></span>
+ <span>⚡ <span id="energy">5</span>/10</span>
+ <span>🔴 Enemy: <span id="ehp">1000</span></span>
+</div>
+<canvas id="game"></canvas>
+<div id="message">Choose a troop card, then tap your side of the arena!</div>
+<div id="cards">
+ <button class="card selected" data-id="knight">🛡<b>⚔️</b>Knight<small>3 Energy</small></button>
+ <button class="card" data-id="archer">🏹<b>🏹</b>Archer<small>3 Energy</small></button>
+ <button class="card" data-id="giant">🗿<b>🗿</b>Giant<small>5 Energy</small></button>
+ <button class="card" data-id="wizard">🔥<b>🧙</b>Wizard<small>4 Energy</small></button>
+</div>
+<div><button id="restart">↻ Restart Battle</button></div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const hpEl=document.getElementById("hp");
+const ehpEl=document.getElementById("ehp");
+const energyEl=document.getElementById("energy");
+const message=document.getElementById("message");
+
+const W=600,H=1000;
+let playerHP,enemyHP,energy,units,selected,ended,lastTime;
+let enemyTimer,clock;
+
+const cards={
+ knight:{cost:3,emoji:"⚔️",hp:150,damage:25,range:35,speed:55,rate:0.8},
+ archer:{cost:3,emoji:"🏹",hp:80,damage:18,range:125,speed:43,rate:1},
+ giant:{cost:5,emoji:"🗿",hp:380,damage:40,range:40,speed:25,rate:1.4},
+ wizard:{cost:4,emoji:"🧙",hp:110,damage:35,range:105,speed:34,rate:1.2}
+};
+
+function resize(){
+ const r=canvas.getBoundingClientRect();
+ const d=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=r.width*d;canvas.height=r.height*d;
+ ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+}
+window.addEventListener("resize",resize);
+
+function reset(){
+ playerHP=1000;enemyHP=1000;energy=5;
+ units=[];selected="knight";ended=false;
+ enemyTimer=3;clock=0;lastTime=0;
+ message.textContent="Choose a troop card, then tap your side!";
+ document.querySelectorAll(".card").forEach(c=>
+ c.classList.toggle("selected",c.dataset.id===selected));
+ updateStats();resize();
+}
+function updateStats(){
+ hpEl.textContent=Math.max(0,Math.ceil(playerHP));
+ ehpEl.textContent=Math.max(0,Math.ceil(enemyHP));
+ energyEl.textContent=energy.toFixed(1);
+}
+
+document.querySelectorAll(".card").forEach(card=>{
+ card.addEventListener("click",()=>{
+ if(ended)return;
+ selected=card.dataset.id;
+ document.querySelectorAll(".card").forEach(c=>
+ c.classList.toggle("selected",c===card));
+ });
+});
+
+function spawn(team,type,x){
+ const c=cards[type];
+ units.push({team,type,x,y:team==="blue"?830:170,
+ hp:c.hp,maxHP:c.hp,damage:c.damage,range:c.range,
+ speed:c.speed,rate:c.rate,cool:0});
+}
+
+canvas.addEventListener("pointerdown",e=>{
+ if(ended)return;
+ const r=canvas.getBoundingClientRect();
+ const x=(e.clientX-r.left)/r.width*W;
+ const y=(e.clientY-r.top)/r.height*H;
+ if(y<520){message.textContent="Deploy troops on your side!";return}
+ if(energy<cards[selected].cost){
+ message.textContent="Not enough energy!";return}
+ const lane=x<300?240:360;
+ spawn("blue",selected,lane);
+ energy-=cards[selected].cost;
+ message.textContent=selected.toUpperCase()+" deployed!";
+ updateStats();
+});
+
+function drawArena(){
+ ctx.fillStyle="#77ae4e";ctx.fillRect(0,0,W,H);
+ // Arena lanes
+ ctx.fillStyle="#83ba55";
+ ctx.fillRect(40,0,520,H);
+ // River
+ ctx.fillStyle="#3d9fc3";ctx.fillRect(0,470,W,70);
+ ctx.fillStyle="#a98a5a";
+ ctx.fillRect(205,455,70,100);
+ ctx.fillRect(325,455,70,100);
+ // Grass details
+ for(let i=0;i<65;i++){
+ let x=(i*83)%600,y=(i*137)%1000;
+ ctx.fillStyle=i%2?"#689c43":"#8bc15c";
+ ctx.fillRect(x,y,5,5);
+ }
+ // Towers
+ tower(300,90,"🔴","ENEMY");
+ tower(300,910,"🔵","YOU");
+ tower(125,240,"🔴","TOWER");
+ tower(475,240,"🔴","TOWER");
+ tower(125,760,"🔵","TOWER");
+ tower(475,760,"🔵","TOWER");
+}
+function tower(x,y,team,label){
+ ctx.fillStyle="#d9c18b";
+ ctx.fillRect(x-42,y-36,84,72);
+ ctx.fillStyle=team==="🔵"?"#287ad0":"#c74646";
+ ctx.fillRect(x-36,y-31,72,19);
+ ctx.fillStyle="#fff";
+ ctx.font="bold 13px Arial";ctx.textAlign="center";
+ ctx.fillText(label,x,y+7);
+}
+function drawUnits(){
+ units.forEach(u=>{
+ ctx.beginPath();ctx.arc(u.x,u.y,22,0,Math.PI*2);
+ ctx.fillStyle=u.team==="blue"?"#287be0":"#d94a4a";
+ ctx.fill();
+ ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
+ ctx.font="23px Arial";ctx.textAlign="center";
+ ctx.fillText(cards[u.type].emoji,u.x,u.y+8);
+ ctx.fillStyle="#222";ctx.fillRect(u.x-20,u.y-31,40,5);
+ ctx.fillStyle="#64e46d";
+ ctx.fillRect(u.x-20,u.y-31,40*Math.max(0,u.hp/u.maxHP),5);
+ });
+}
+
+function update(dt){
+ if(ended)return;
+ energy=Math.min(10,energy+dt*0.45);
+ enemyTimer-=dt;
+ if(enemyTimer<=0){
+ const types=Object.keys(cards);
+ const type=types[Math.floor(Math.random()*types.length)];
+ spawn("red",type,Math.random()<.5?240:360);
+ enemyTimer=4+Math.random()*3;
+ }
+ units.forEach(u=>{
+ u.cool-=dt;
+ let target=null,best=Infinity;
+ // Find closest enemy troop
+ units.forEach(v=>{
+ if(v.team!==u.team&&v.hp>0){
+ const d=Math.hypot(v.x-u.x,v.y-u.y);
+ if(d<u.range+15&&d<best){best=d;target=v}
+ }
+ });
+ // Attack enemy troop
+ if(target){
+ if(u.cool<=0){target.hp-=u.damage;u.cool=u.rate}
+ }else{
+ // Attack opposing main castle
+ const castleY=u.team==="blue"?90:910;
+ const dist=Math.abs(u.y-castleY);
+ if(dist<75){
+ if(u.cool<=0){
+ if(u.team==="blue")enemyHP-=u.damage;
+ else playerHP-=u.damage;
+ u.cool=u.rate;
+ }
+ }else{
+ u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
+ }
+ }
+ });
+ units=units.filter(u=>u.hp>0);
+ if(playerHP<=0||enemyHP<=0){
+ ended=true;
+ message.textContent=enemyHP<=0?"🏆 VICTORY! You conquered the enemy!":"💔 DEFEAT! Your castle was destroyed.";
+ }
+ updateStats();
+}
+
+function frame(t){
+ const dt=Math.min((t-lastTime)/1000||0,0.05);
+ lastTime=t;
+ clock+=dt;
+ update(dt);
+ drawArena();
+ drawUnits();
+ requestAnimationFrame(frame);
+}
+document.getElementById("restart").onclick=reset;
+reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
