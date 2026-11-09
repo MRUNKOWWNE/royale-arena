@@ -290,6 +290,146 @@ function tower(x,y,team,label){
   ctx.fillRect(x+18,y-9,9,13);
 }
 
+function drawCharacter(type, x, y, blue) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  const team = blue ? "#258cff" : "#ed4148";
+  const dark = blue ? "#123d78" : "#81242b";
+
+  // Character shadow
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 13, 19, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Giant
+  if (type === "giant") {
+    ctx.fillStyle = "#77716d";
+    ctx.beginPath();
+    ctx.ellipse(0, -3, 19, 23, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#a69b91";
+    ctx.beginPath();
+    ctx.arc(0, -19, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#292b32";
+    ctx.fillRect(-8, -22, 5, 4);
+    ctx.fillRect(3, -22, 5, 4);
+
+    ctx.fillStyle = "#57eaff";
+    ctx.fillRect(-7, -9, 14, 5);
+
+    ctx.fillStyle = "#d2c2ad";
+    ctx.fillRect(-17, -9, 8, 18);
+    ctx.fillRect(9, -9, 8, 18);
+
+  } else if (type === "wizard") {
+    // Wizard robe
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.moveTo(-15, 12);
+    ctx.lineTo(-10, -10);
+    ctx.lineTo(10, -10);
+    ctx.lineTo(15, 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Face
+    ctx.fillStyle = "#efb98e";
+    ctx.beginPath();
+    ctx.arc(0, -13, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hood
+    ctx.fillStyle = team;
+    ctx.beginPath();
+    ctx.moveTo(-12, -10);
+    ctx.lineTo(0, -34);
+    ctx.lineTo(12, -10);
+    ctx.closePath();
+    ctx.fill();
+
+    // Magic flame
+    ctx.fillStyle = "#ff9d20";
+    ctx.beginPath();
+    ctx.arc(20, -15, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#fff27a";
+    ctx.beginPath();
+    ctx.arc(20, -15, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (type === "archer") {
+    // Archer body
+    ctx.fillStyle = "#278d55";
+    ctx.fillRect(-10, -9, 20, 22);
+
+    // Face
+    ctx.fillStyle = "#f0bd91";
+    ctx.beginPath();
+    ctx.arc(0, -17, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hair
+    ctx.fillStyle = "#d94b9b";
+    ctx.beginPath();
+    ctx.arc(-2, -22, 10, Math.PI, Math.PI * 2);
+    ctx.fill();
+
+    // Bow
+    ctx.strokeStyle = "#d9a15c";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(17, -7, 13, -1.3, 1.3);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#fff0c2";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(17, -20);
+    ctx.lineTo(17, 6);
+    ctx.stroke();
+
+  } else {
+    // Knight armor
+    ctx.fillStyle = dark;
+    ctx.fillRect(-12, -8, 24, 22);
+
+    ctx.fillStyle = "#b9c9db";
+    ctx.beginPath();
+    ctx.arc(0, -17, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Helmet
+    ctx.fillStyle = team;
+    ctx.fillRect(-11, -23, 22, 8);
+
+    ctx.fillStyle = "#26384c";
+    ctx.fillRect(-7, -18, 14, 4);
+
+    // Sword
+    ctx.strokeStyle = "#f4e8c9";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(12, -8);
+    ctx.lineTo(25, -29);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#d9a64d";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(8, -9);
+    ctx.lineTo(17, -3);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
 function drawUnits(){
   units.forEach(u=>{
     const blue=u.team==="blue";
