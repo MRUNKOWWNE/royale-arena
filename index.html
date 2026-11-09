@@ -61,8 +61,9 @@ const message=document.getElementById("message");
 const W=600,H=1000;
 let playerHP,enemyHP,energy,units,selected,ended,lastTime;
 let enemyTimer,clock;
+let towers=[];
 
-const cards={
+ const cards={
  knight:{cost:3,emoji:"⚔️",hp:150,damage:25,range:35,speed:55,rate:0.8},
  archer:{cost:3,emoji:"🏹",hp:80,damage:18,range:125,speed:43,rate:1},
  giant:{cost:5,emoji:"🗿",hp:380,damage:40,range:40,speed:25,rate:1.4},
@@ -80,6 +81,12 @@ window.addEventListener("resize",resize);
 function reset(){
  playerHP=1000;enemyHP=1000;energy=5;
  units=[];selected="knight";ended=false;
+ towers=[
+ {team:"red",lane:240,x:240,y:240,hp:700,maxHP:700,cool:0},
+ {team:"red",lane:360,x:360,y:240,hp:700,maxHP:700,cool:0},
+ {team:"blue",lane:240,x:240,y:760,hp:700,maxHP:700,cool:0},
+ {team:"blue",lane:360,x:360,y:760,hp:700,maxHP:700,cool:0}
+];
  enemyTimer=3;clock=0;lastTime=0;
  message.textContent="Choose a troop card, then tap your side!";
  document.querySelectorAll(".card").forEach(c=>
@@ -103,25 +110,20 @@ document.querySelectorAll(".card").forEach(card=>{
 
 function spawn(team,type,x){
  const c=cards[type];
- units.push({team,type,x,y:team==="blue"?830:170,
- hp:c.hp,maxHP:c.hp,damage:c.damage,range:c.range,
- speed:c.speed,rate:c.rate,cool:0});
-}
 
-canvas.addEventListener("pointerdown",e=>{
- if(ended)return;
- const r=canvas.getBoundingClientRect();
- const x=(e.clientX-r.left)/r.width*W;
- const y=(e.clientY-r.top)/r.height*H;
- if(y<520){message.textContent="Deploy troops on your side!";return}
- if(energy<cards[selected].cost){
- message.textContent="Not enough energy!";return}
- const lane=x<300?240:360;
- spawn("blue",selected,lane);
- energy-=cards[selected].cost;
- message.textContent=selected.toUpperCase()+" deployed!";
- updateStats();
-});
+ units.push({
+  team,type,x,
+  lane:x,
+  y:team==="blue"?830:170,
+  hp:c.hp,
+  maxHP:c.hp,
+  damage:c.damage,
+  range:c.range,
+  speed:c.speed,
+  rate:c.rate,
+  cool:0
+ });
+}
 
 
 function drawArena(){
@@ -275,13 +277,13 @@ function drawArena(){
   bridge(325);
 
   // Castle positions
-  tower(300,90,"🔴","ENEMY");
-  tower(125,240,"🔴","TOWER");
-  tower(475,240,"🔴","TOWER");
+  tower(300,90,"🔴","ENEMY KING");
+tower(240,240,"🔴","TOWER");
+tower(360,240,"🔴","TOWER");
 
-  tower(125,760,"🔵","TOWER");
-  tower(475,760,"🔵","TOWER");
-  tower(300,910,"🔵","YOU");
+tower(240,760,"🔵","TOWER");
+tower(360,760,"🔵","TOWER");
+tower(300,910,"🔵","YOUR KING");
 }
 
 function tower(x,y,team,label){
@@ -480,7 +482,25 @@ function drawCharacter(type, x, y, blue) {
 
   ctx.restore();
 }
+function drawTowerHealthBars(){
+ towers.forEach(t=>{
+  if(t.hp<=0)return;
 
+  const ratio=Math.max(0,t.hp/t.maxHP);
+
+  ctx.fillStyle="#382c28";
+  ctx.fillRect(t.x-32,t.y-58,64,9);
+
+  ctx.fillStyle=ratio>.5?"#45e76a":
+                ratio>.25?"#ffd34d":"#ff4545";
+
+  ctx.fillRect(t.x-30,t.y-56,60*ratio,5);
+
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=1;
+  ctx.strokeRect(t.x-32,t.y-58,64,9);
+ });
+}
 function drawUnits(){
   units.forEach(u=>{
     const blue=u.team==="blue";
@@ -526,47 +546,127 @@ function drawUnits(){
 
 function update(dt){
  if(ended)return;
+
  energy=Math.min(10,energy+dt*0.45);
+
+ // Enemy AI deploys troops in either lane
  enemyTimer-=dt;
+
  if(enemyTimer<=0){
- const types=Object.keys(cards);
- const type=types[Math.floor(Math.random()*types.length)];
- spawn("red",type,Math.random()<.5?240:360);
- enemyTimer=4+Math.random()*3;
+  const types=Object.keys(cards);
+  const type=types[Math.floor(Math.random()*types.length)];
+  const lane=Math.random()<0.5?240:360;
+
+  spawn("red",type,lane);
+  enemyTimer=4+Math.random()*3;
  }
+
+ // Troop movement and attacks
  units.forEach(u=>{
- u.cool-=dt;
- let target=null,best=Infinity;
- // Find closest enemy troop
- units.forEach(v=>{
- if(v.team!==u.team&&v.hp>0){
- const d=Math.hypot(v.x-u.x,v.y-u.y);
- if(d<u.range+15&&d<best){best=d;target=v}
- }
+  u.cool-=dt;
+
+  let target=null;
+  let best=Infinity;
+
+  // Attack nearby enemy troops first
+  units.forEach(v=>{
+   if(v.team!==u.team&&v.hp>0){
+    const d=Math.hypot(v.x-u.x,v.y-u.y);
+
+    if(d<u.range+15&&d<best){
+     best=d;
+     target=v;
+    }
+   }
+  });
+
+  if(target){
+   if(u.cool<=0){
+    target.hp-=u.damage;
+    u.cool=u.rate;
+   }
+   return;
+  }
+
+  // Find the enemy tower in this lane
+  const enemyTeam=u.team==="blue"?"red":"blue";
+
+  const targetTower=towers.find(t=>
+   t.team===enemyTeam&&
+   t.lane===u.lane&&
+   t.hp>0
+  );
+
+  if(targetTower){
+   const d=Math.hypot(
+    targetTower.x-u.x,
+    targetTower.y-u.y
+   );
+
+   if(d<65){
+    if(u.cool<=0){
+     targetTower.hp-=u.damage;
+     u.cool=u.rate;
+    }
+   }else{
+    u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
+   }
+
+  }else{
+   // Attack the enemy king tower after the lane tower falls
+   const castleY=u.team==="blue"?90:910;
+   const dist=Math.abs(u.y-castleY);
+
+   if(dist<75){
+    if(u.cool<=0){
+     if(u.team==="blue")enemyHP-=u.damage;
+     else playerHP-=u.damage;
+
+     u.cool=u.rate;
+    }
+   }else{
+    u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
+   }
+  }
  });
- // Attack enemy troop
- if(target){
- if(u.cool<=0){target.hp-=u.damage;u.cool=u.rate}
- }else{
- // Attack opposing main castle
- const castleY=u.team==="blue"?90:910;
- const dist=Math.abs(u.y-castleY);
- if(dist<75){
- if(u.cool<=0){
- if(u.team==="blue")enemyHP-=u.damage;
- else playerHP-=u.damage;
- u.cool=u.rate;
- }
- }else{
- u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
- }
- }
- });
+
+ // Remove defeated troops
  units=units.filter(u=>u.hp>0);
- if(playerHP<=0||enemyHP<=0){
- ended=true;
- message.textContent=enemyHP<=0?"🏆 VICTORY! You conquered the enemy!":"💔 DEFEAT! Your castle was destroyed.";
+
+ // Side towers defend themselves
+ towers.forEach(t=>{
+  if(t.hp<=0)return;
+
+  t.cool-=dt;
+
+  let target=null;
+  let best=175;
+
+  units.forEach(u=>{
+   if(u.team!==t.team&&u.hp>0){
+    const d=Math.hypot(u.x-t.x,u.y-t.y);
+
+    if(d<best){
+     best=d;
+     target=u;
+    }
+   }
+  });
+
+  if(target&&t.cool<=0){
+   target.hp-=22;
+   t.cool=1;
+  }
+ });
+
+ // Victory and defeat
+ if(enemyHP<=0||playerHP<=0){
+  ended=true;
+  message.textContent=enemyHP<=0
+   ?"🏆 VICTORY! Enemy king defeated!"
+   :"💔 DEFEAT! Your king was defeated.";
  }
+
  updateStats();
 }
 
@@ -576,6 +676,7 @@ function frame(t){
  clock+=dt;
  update(dt);
  drawArena();
+ drawTowerHealthBars();
  drawUnits();
  requestAnimationFrame(frame);
 }
