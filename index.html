@@ -124,50 +124,213 @@ canvas.addEventListener("pointerdown",e=>{
 });
 
 function drawArena(){
- ctx.fillStyle="#77ae4e";ctx.fillRect(0,0,W,H);
- // Arena lanes
- ctx.fillStyle="#83ba55";
- ctx.fillRect(40,0,520,H);
- // River
- ctx.fillStyle="#3d9fc3";ctx.fillRect(0,470,W,70);
- ctx.fillStyle="#a98a5a";
- ctx.fillRect(205,455,70,100);
- ctx.fillRect(325,455,70,100);
- // Grass details
- for(let i=0;i<65;i++){
- let x=(i*83)%600,y=(i*137)%1000;
- ctx.fillStyle=i%2?"#689c43":"#8bc15c";
- ctx.fillRect(x,y,5,5);
- }
- // Towers
- tower(300,90,"🔴","ENEMY");
- tower(300,910,"🔵","YOU");
- tower(125,240,"🔴","TOWER");
- tower(475,240,"🔴","TOWER");
- tower(125,760,"🔵","TOWER");
- tower(475,760,"🔵","TOWER");
+  // Rich grass background
+  const grass=ctx.createLinearGradient(0,0,W,H);
+  grass.addColorStop(0,"#91c75d");
+  grass.addColorStop(0.5,"#76b34c");
+  grass.addColorStop(1,"#548e3b");
+  ctx.fillStyle=grass;
+  ctx.fillRect(0,0,W,H);
+
+  // Arena ground
+  ctx.fillStyle="#83bd52";
+  ctx.fillRect(40,0,520,H);
+
+  // Subtle battlefield paths
+  ctx.fillStyle="rgba(222,198,132,0.13)";
+  ctx.fillRect(270,0,60,1000);
+
+  // Grass details
+  for(let i=0;i<180;i++){
+    const x=(i*97)%600;
+    const y=(i*173)%1000;
+    ctx.fillStyle=i%2?"rgba(42,100,38,.25)":"rgba(220,238,145,.3)";
+    ctx.beginPath();
+    ctx.ellipse(x,y,3,2,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // River
+  const water=ctx.createLinearGradient(0,470,0,550);
+  water.addColorStop(0,"#4db8d0");
+  water.addColorStop(0.5,"#278cad");
+  water.addColorStop(1,"#55bfd2");
+  ctx.fillStyle=water;
+  ctx.fillRect(0,470,W,80);
+
+  // Water reflections
+  for(let i=0;i<20;i++){
+    ctx.strokeStyle="rgba(220,250,255,.22)";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    const x=(i*83)%600;
+    const y=480+(i*19)%60;
+    ctx.moveTo(x,y);
+    ctx.lineTo(x+25,y-3);
+    ctx.stroke();
+  }
+
+  // Stone banks
+  ctx.fillStyle="#b4a078";
+  ctx.fillRect(0,465,W,5);
+  ctx.fillRect(0,550,W,5);
+
+  // Two detailed wooden bridges
+  function bridge(x){
+    ctx.fillStyle="#60432c";
+    ctx.fillRect(x-3,458,76,102);
+
+    ctx.fillStyle="#b9864c";
+    ctx.fillRect(x,458,70,100);
+
+    for(let i=0;i<6;i++){
+      ctx.fillStyle=i%2?"#c99a60":"#a97642";
+      ctx.fillRect(x,460+i*16,70,14);
+    }
+
+    ctx.strokeStyle="#704a2e";
+    ctx.lineWidth=4;
+    ctx.strokeRect(x,458,70,100);
+
+    // Bridge railings
+    ctx.strokeStyle="#754a2a";
+    ctx.lineWidth=5;
+    ctx.beginPath();
+    ctx.moveTo(x,460);
+    ctx.lineTo(x,452);
+    ctx.lineTo(x+70,452);
+    ctx.lineTo(x+70,460);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x,557);
+    ctx.lineTo(x,566);
+    ctx.lineTo(x+70,566);
+    ctx.lineTo(x+70,557);
+    ctx.stroke();
+  }
+
+  bridge(205);
+  bridge(325);
+
+  // Decorative stones
+  for(let i=0;i<35;i++){
+    const x=(i*131)%600;
+    const y=(i*211)%1000;
+    ctx.fillStyle="#9aaf64";
+    ctx.beginPath();
+    ctx.arc(x,y,2+(i%3),0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // Enemy towers
+  tower(300,90,"🔴","ENEMY");
+  tower(125,240,"🔴","TOWER");
+  tower(475,240,"🔴","TOWER");
+
+  // Player towers
+  tower(125,760,"🔵","TOWER");
+  tower(475,760,"🔵","TOWER");
+  tower(300,910,"🔵","YOU");
 }
+
 function tower(x,y,team,label){
- ctx.fillStyle="#d9c18b";
- ctx.fillRect(x-42,y-36,84,72);
- ctx.fillStyle=team==="🔵"?"#287ad0":"#c74646";
- ctx.fillRect(x-36,y-31,72,19);
- ctx.fillStyle="#fff";
- ctx.font="bold 13px Arial";ctx.textAlign="center";
- ctx.fillText(label,x,y+7);
+  const blue=team==="🔵";
+
+  // Tower shadow
+  ctx.fillStyle="rgba(0,0,0,.2)";
+  ctx.beginPath();
+  ctx.ellipse(x,y+37,53,13,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Main castle body
+  const stone=ctx.createLinearGradient(x-40,y,x+40,y);
+  stone.addColorStop(0,"#a99572");
+  stone.addColorStop(.5,"#ead6a8");
+  stone.addColorStop(1,"#b29a71");
+  ctx.fillStyle=stone;
+  ctx.fillRect(x-42,y-30,84,68);
+
+  // Stone details
+  ctx.strokeStyle="rgba(90,70,45,.35)";
+  ctx.lineWidth=2;
+  ctx.strokeRect(x-42,y-30,84,68);
+  ctx.beginPath();
+  ctx.moveTo(x-42,y);
+  ctx.lineTo(x+42,y);
+  ctx.moveTo(x,y);
+  ctx.lineTo(x,y+38);
+  ctx.stroke();
+
+  // Battlements
+  ctx.fillStyle=blue?"#287fd5":"#ce4545";
+  ctx.fillRect(x-42,y-37,84,22);
+  for(let i=0;i<4;i++){
+    ctx.fillRect(x-38+i*25,y-43,15,9);
+  }
+
+  // Castle door
+  ctx.fillStyle="#68472e";
+  ctx.beginPath();
+  ctx.roundRect(x-10,y+14,20,24,9,);
+  ctx.fill();
+
+  // Team banner
+  ctx.fillStyle=blue?"#237bd6":"#c83c42";
+  ctx.fillRect(x-5,y-12,10,14);
+
+  // Tower name
+  ctx.fillStyle="#fff";
+  ctx.font="bold 11px Arial";
+  ctx.textAlign="center";
+  ctx.fillText(label,x,y+9);
+
+  // Window
+  ctx.fillStyle="#584a39";
+  ctx.fillRect(x-27,y-9,9,13);
+  ctx.fillRect(x+18,y-9,9,13);
 }
+
 function drawUnits(){
- units.forEach(u=>{
- ctx.beginPath();ctx.arc(u.x,u.y,22,0,Math.PI*2);
- ctx.fillStyle=u.team==="blue"?"#287be0":"#d94a4a";
- ctx.fill();
- ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
- ctx.font="23px Arial";ctx.textAlign="center";
- ctx.fillText(cards[u.type].emoji,u.x,u.y+8);
- ctx.fillStyle="#222";ctx.fillRect(u.x-20,u.y-31,40,5);
- ctx.fillStyle="#64e46d";
- ctx.fillRect(u.x-20,u.y-31,40*Math.max(0,u.hp/u.maxHP),5);
- });
+  units.forEach(u=>{
+    const blue=u.team==="blue";
+
+    // Unit shadow
+    ctx.fillStyle="rgba(0,0,0,.25)";
+    ctx.beginPath();
+    ctx.ellipse(u.x,u.y+14,25,9,0,0,Math.PI*2);
+    ctx.fill();
+
+    // Team-colored ground circle
+    ctx.beginPath();
+    ctx.ellipse(u.x,u.y,23,18,0,0,Math.PI*2);
+    ctx.fillStyle=blue?"#267bd9":"#d94242";
+    ctx.fill();
+
+    ctx.strokeStyle=blue?"#b8e4ff":"#ffc2a9";
+    ctx.lineWidth=3;
+    ctx.stroke();
+
+    // Character
+    ctx.font="31px Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(cards[u.type].emoji,u.x,u.y);
+
+    // Health bar background
+    ctx.fillStyle="#382c28";
+    ctx.fillRect(u.x-23,u.y-29,46,7);
+
+    // Health bar
+    const health=Math.max(0,u.hp/u.maxHP);
+    ctx.fillStyle=health>.5?"#51e76d":
+                  health>.25?"#ffd34d":"#ff514b";
+    ctx.fillRect(u.x-22,u.y-28,44*health,5);
+
+    // Health bar border
+    ctx.strokeStyle="#fff";
+    ctx.lineWidth=1;
+    ctx.strokeRect(u.x-23,u.y-29,46,7);
+  });
 }
 
 function update(dt){
