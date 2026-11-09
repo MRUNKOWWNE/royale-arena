@@ -64,7 +64,7 @@ let towers=[];
 let projectiles=[];
 let impacts=[];
  
- const cards={
+const cards={
  knight:{cost:3,emoji:"⚔️",hp:150,damage:25,range:35,speed:55,rate:0.8},
  archer:{cost:3,emoji:"🏹",hp:80,damage:18,range:125,speed:43,rate:1},
  giant:{cost:5,emoji:"🗿",hp:380,damage:40,range:40,speed:25,rate:1.4},
@@ -73,9 +73,12 @@ let impacts=[];
 
 function resize(){
  const r=canvas.getBoundingClientRect();
- const d=Math.min(window.devicePixelRatio||1,2);
- canvas.width=r.width*d;canvas.height=r.height*d;
- ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+ if(r.width>0 && r.height>0){
+  const d=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=r.width*d;
+  canvas.height=r.height*d;
+  ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+ }
 }
 window.addEventListener("resize",resize);
 
@@ -89,13 +92,15 @@ function reset(){
  {team:"blue",lane:360,x:360,y:760,hp:700,maxHP:700,cool:0}
 ];
  projectiles=[];
-impacts=[];
+ impacts=[];
  enemyTimer=3;clock=0;lastTime=0;
  message.textContent="Choose a troop card, then tap your side!";
  document.querySelectorAll(".card").forEach(c=>
  c.classList.toggle("selected",c.dataset.id===selected));
- updateStats();resize();
+ updateStats();
+ resize();
 }
+
 function updateStats(){
  hpEl.textContent=Math.max(0,Math.ceil(playerHP));
  ehpEl.textContent=Math.max(0,Math.ceil(enemyHP));
@@ -113,7 +118,6 @@ document.querySelectorAll(".card").forEach(card=>{
 
 function spawn(team,type,x){
  const c=cards[type];
-
  units.push({
   team,type,x,
   lane:x,
@@ -156,7 +160,6 @@ canvas.addEventListener("pointerdown",e=>{
 });
  
 function drawArena(){
- // Lush grass background
  const grass=ctx.createLinearGradient(0,0,600,1000);
  grass.addColorStop(0,"#9bcf65");
  grass.addColorStop(.5,"#72ae49");
@@ -164,7 +167,6 @@ function drawArena(){
  ctx.fillStyle=grass;
  ctx.fillRect(0,0,W,H);
 
- // Grass texture
  for(let i=0;i<350;i++){
    const x=(i*137)%600;
    const y=(i*193)%1000;
@@ -176,18 +178,15 @@ function drawArena(){
    ctx.stroke();
  }
 
- // Stone battlefield paths
  ctx.fillStyle="#a99a77";
  ctx.fillRect(280,0,40,1000);
 
- // Decorative path stones
  for(let i=0;i<35;i++){
    const y=i*30;
    ctx.fillStyle=i%2?"#c6b68f":"#948666";
    ctx.fillRect(283,y,16,24);
  }
 
- // Flower decorations
  for(let i=0;i<65;i++){
    const x=(i*113)%600;
    const y=(i*157)%1000;
@@ -203,7 +202,6 @@ function drawArena(){
    ctx.fill();
  }
 
- // Small trees
  function tree(x,y){
    ctx.fillStyle="#76502d";
    ctx.fillRect(x-4,y,8,17);
@@ -224,7 +222,6 @@ function drawArena(){
    [45,650],[555,650],[65,950],[530,950]
  ].forEach(p=>tree(p[0],p[1]));
 
- // Decorative rocks
  for(let i=0;i<24;i++){
    const x=(i*173)%600;
    const y=(i*239)%1000;
@@ -240,7 +237,6 @@ function drawArena(){
    ctx.fill();
  }
 
- // River
  const water=ctx.createLinearGradient(0,470,0,550);
  water.addColorStop(0,"#70d4e7");
  water.addColorStop(.5,"#258eae");
@@ -249,12 +245,10 @@ function drawArena(){
  ctx.fillStyle=water;
  ctx.fillRect(0,470,W,80);
 
- // River banks
  ctx.fillStyle="#c5ae7d";
  ctx.fillRect(0,465,W,6);
  ctx.fillRect(0,550,W,6);
 
- // Water reflections
  for(let i=0;i<35;i++){
    const x=(i*79)%600;
    const y=478+(i*17)%62;
@@ -267,7 +261,6 @@ function drawArena(){
    ctx.stroke();
  }
 
- // Wooden bridges
  function bridge(x){
    ctx.fillStyle="#76502f";
    ctx.fillRect(x-3,458,76,102);
@@ -284,7 +277,6 @@ function drawArena(){
    ctx.lineWidth=4;
    ctx.strokeRect(x,458,70,100);
 
-   // Bridge railings
    ctx.strokeStyle="#754a2a";
    ctx.lineWidth=5;
    ctx.beginPath();
@@ -305,45 +297,31 @@ function drawArena(){
  bridge(205);
  bridge(325);
 
-// Castle positions
-tower(300,90,"🔴","ENEMY KING");
+ tower(300,90,"🔴","ENEMY KING");
 
-// RED SIDE TOWERS
-const redLeft = towers.find(t => t.team === "red" && t.lane === 240);
-const redRight = towers.find(t => t.team === "red" && t.lane === 360);
+ const redLeft = towers.find(t => t.team === "red" && t.lane === 240);
+ const redRight = towers.find(t => t.team === "red" && t.lane === 360);
 
-if(redLeft && redLeft.hp > 0){
- tower(240,240,"🔴","TOWER");
+ if(redLeft && redLeft.hp > 0) tower(240,240,"🔴","TOWER");
+ if(redRight && redRight.hp > 0) tower(360,240,"🔴","TOWER");
+
+ const blueLeft = towers.find(t => t.team === "blue" && t.lane === 240);
+ const blueRight = towers.find(t => t.team === "blue" && t.lane === 360);
+
+ if(blueLeft && blueLeft.hp > 0) tower(240,760,"🔵","TOWER");
+ if(blueRight && blueRight.hp > 0) tower(360,760,"🔵","TOWER");
+
+ tower(300,910,"🔵","YOUR KING");
 }
-
-if(redRight && redRight.hp > 0){
- tower(360,240,"🔴","TOWER");
-}
-
-// BLUE SIDE TOWERS
-const blueLeft = towers.find(t => t.team === "blue" && t.lane === 240);
-const blueRight = towers.find(t => t.team === "blue" && t.lane === 360);
-
-if(blueLeft && blueLeft.hp > 0){
- tower(240,760,"🔵","TOWER");
-}
-
-if(blueRight && blueRight.hp > 0){
- tower(360,760,"🔵","TOWER");
-}
-
-tower(300,910,"🔵","YOUR KING");
 
 function tower(x,y,team,label){
   const blue=team==="🔵";
 
-  // Tower shadow
   ctx.fillStyle="rgba(0,0,0,.2)";
   ctx.beginPath();
   ctx.ellipse(x,y+37,53,13,0,0,Math.PI*2);
   ctx.fill();
 
-  // Main castle body
   const stone=ctx.createLinearGradient(x-40,y,x+40,y);
   stone.addColorStop(0,"#a99572");
   stone.addColorStop(.5,"#ead6a8");
@@ -351,7 +329,6 @@ function tower(x,y,team,label){
   ctx.fillStyle=stone;
   ctx.fillRect(x-42,y-30,84,68);
 
-  // Stone details
   ctx.strokeStyle="rgba(90,70,45,.35)";
   ctx.lineWidth=2;
   ctx.strokeRect(x-42,y-30,84,68);
@@ -362,14 +339,12 @@ function tower(x,y,team,label){
   ctx.lineTo(x,y+38);
   ctx.stroke();
 
-  // Battlements
   ctx.fillStyle=blue?"#287fd5":"#ce4545";
   ctx.fillRect(x-42,y-37,84,22);
   for(let i=0;i<4;i++){
     ctx.fillRect(x-38+i*25,y-43,15,9);
   }
 
-  // Castle door (Fixed compatibility)
   ctx.fillStyle="#68472e";
   ctx.beginPath();
   ctx.moveTo(x-10,y+38);
@@ -380,17 +355,14 @@ function tower(x,y,team,label){
   ctx.closePath();
   ctx.fill();
  
-  // Team banner
   ctx.fillStyle=blue?"#237bd6":"#c83c42";
   ctx.fillRect(x-5,y-12,10,14);
 
-  // Tower name
   ctx.fillStyle="#fff";
   ctx.font="bold 11px Arial";
   ctx.textAlign="center";
   ctx.fillText(label,x,y+9);
 
-  // Window
   ctx.fillStyle="#584a39";
   ctx.fillRect(x-27,y-9,9,13);
   ctx.fillRect(x+18,y-9,9,13);
@@ -403,13 +375,11 @@ function drawCharacter(type, x, y, blue) {
  const team = blue ? "#258cff" : "#ed4148";
  const dark = blue ? "#123d78" : "#81242b";
 
- // Character shadow
  ctx.fillStyle = "rgba(0,0,0,0.28)";
  ctx.beginPath();
  ctx.ellipse(0, 13, 19, 7, 0, 0, Math.PI * 2);
  ctx.fill();
 
- // Giant
  if (type === "giant") {
    ctx.fillStyle = "#77716d";
    ctx.beginPath();
@@ -433,7 +403,6 @@ function drawCharacter(type, x, y, blue) {
    ctx.fillRect(9, -9, 8, 18);
 
  } else if (type === "wizard") {
-   // Wizard robe
    ctx.fillStyle = dark;
    ctx.beginPath();
    ctx.moveTo(-15, 12);
@@ -443,13 +412,11 @@ function drawCharacter(type, x, y, blue) {
    ctx.closePath();
    ctx.fill();
 
-   // Face
    ctx.fillStyle = "#efb98e";
    ctx.beginPath();
    ctx.arc(0, -13, 9, 0, Math.PI * 2);
    ctx.fill();
 
-   // Hood
    ctx.fillStyle = team;
    ctx.beginPath();
    ctx.moveTo(-12, -10);
@@ -458,7 +425,6 @@ function drawCharacter(type, x, y, blue) {
    ctx.closePath();
    ctx.fill();
 
-   // Magic flame
    ctx.fillStyle = "#ff9d20";
    ctx.beginPath();
    ctx.arc(20, -15, 7, 0, Math.PI * 2);
@@ -470,23 +436,19 @@ function drawCharacter(type, x, y, blue) {
    ctx.fill();
 
  } else if (type === "archer") {
-   // Archer body
    ctx.fillStyle = "#278d55";
    ctx.fillRect(-10, -9, 20, 22);
 
-   // Face
    ctx.fillStyle = "#f0bd91";
    ctx.beginPath();
    ctx.arc(0, -17, 9, 0, Math.PI * 2);
    ctx.fill();
 
-   // Hair
    ctx.fillStyle = "#d94b9b";
    ctx.beginPath();
    ctx.arc(-2, -22, 10, Math.PI, Math.PI * 2);
    ctx.fill();
 
-   // Bow
    ctx.strokeStyle = "#d9a15c";
    ctx.lineWidth = 3;
    ctx.beginPath();
@@ -501,7 +463,6 @@ function drawCharacter(type, x, y, blue) {
    ctx.stroke();
 
  } else {
-   // Knight armor
    ctx.fillStyle = dark;
    ctx.fillRect(-12, -8, 24, 22);
 
@@ -510,14 +471,12 @@ function drawCharacter(type, x, y, blue) {
    ctx.arc(0, -17, 11, 0, Math.PI * 2);
    ctx.fill();
 
-   // Helmet
    ctx.fillStyle = team;
    ctx.fillRect(-11, -23, 22, 8);
 
    ctx.fillStyle = "#26384c";
    ctx.fillRect(-7, -18, 14, 4);
 
-   // Sword
    ctx.strokeStyle = "#f4e8c9";
    ctx.lineWidth = 4;
    ctx.beginPath();
@@ -535,109 +494,79 @@ function drawCharacter(type, x, y, blue) {
 
  ctx.restore();
 }
+
 function drawTowerHealthBars(){
  towers.forEach(t=>{
   if(t.hp<=0)return;
-
   const ratio=Math.max(0,t.hp/t.maxHP);
-
   ctx.fillStyle="#382c28";
   ctx.fillRect(t.x-32,t.y-58,64,9);
-
-  ctx.fillStyle=ratio>.5?"#45e76a":
-               ratio>.25?"#ffd34d":"#ff4545";
-
+  ctx.fillStyle=ratio>.5?"#45e76a":ratio>.25?"#ffd34d":"#ff4545";
   ctx.fillRect(t.x-30,t.y-56,60*ratio,5);
-
   ctx.strokeStyle="#fff";
   ctx.lineWidth=1;
   ctx.strokeRect(t.x-32,t.y-58,64,9);
  });
 }
- function drawCombatEffects(){
 
-// Tower projectiles
-projectiles.forEach(p=>{
- const color=p.team==="blue"?"#48caff":"#ff5757";
+function drawCombatEffects(){
+ projectiles.forEach(p=>{
+  const color=p.team==="blue"?"#48caff":"#ff5757";
+  ctx.strokeStyle=color;
+  ctx.globalAlpha=0.45;
+  ctx.lineWidth=5;
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y);
+  ctx.lineTo(p.x-(p.target.x-p.x)*0.08, p.y-(p.target.y-p.y)*0.08);
+  ctx.stroke();
 
- // Projectile trail
- ctx.strokeStyle=color;
- ctx.globalAlpha=0.45;
- ctx.lineWidth=5;
- ctx.beginPath();
- ctx.moveTo(p.x,p.y);
- ctx.lineTo(
-  p.x-(p.target.x-p.x)*0.08,
-  p.y-(p.target.y-p.y)*0.08
- );
- ctx.stroke();
+  ctx.globalAlpha=1;
+  ctx.fillStyle=color;
+  ctx.shadowColor=color;
+  ctx.shadowBlur=15;
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,7,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+ });
 
- // Glowing projectile
- ctx.globalAlpha=1;
- ctx.fillStyle=color;
- ctx.shadowColor=color;
- ctx.shadowBlur=15;
-
- ctx.beginPath();
- ctx.arc(p.x,p.y,7,0,Math.PI*2);
- ctx.fill();
-
- ctx.shadowBlur=0;
-});
-
-// Impact flashes
-impacts.forEach(i=>{
- const size=12+(1-i.life/0.25)*18;
-
- ctx.globalAlpha=i.life/0.25;
- ctx.strokeStyle="#fff4a3";
- ctx.lineWidth=4;
-
- ctx.beginPath();
- ctx.arc(i.x,i.y,size,0,Math.PI*2);
- ctx.stroke();
-
- ctx.globalAlpha=1;
-});
+ impacts.forEach(i=>{
+  const size=12+(1-i.life/0.25)*18;
+  ctx.globalAlpha=i.life/0.25;
+  ctx.strokeStyle="#fff4a3";
+  ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.arc(i.x,i.y,size,0,Math.PI*2);
+  ctx.stroke();
+  ctx.globalAlpha=1;
+ });
 }
  
 function drawUnits(){
  units.forEach(u=>{
    const blue=u.team==="blue";
-
-   // Unit shadow
    ctx.fillStyle="rgba(0,0,0,.25)";
    ctx.beginPath();
    ctx.ellipse(u.x,u.y+14,25,9,0,0,Math.PI*2);
    ctx.fill();
 
-   // Team-colored ground circle
    ctx.beginPath();
    ctx.ellipse(u.x,u.y,23,18,0,0,Math.PI*2);
    ctx.fillStyle=blue?"#267bd9":"#d94242";
    ctx.fill();
-
    ctx.strokeStyle=blue?"#b8e4ff":"#ffc2a9";
    ctx.lineWidth=3;
    ctx.stroke();
 
-   // Character
-   ctx.font="31px Arial";
-   ctx.textAlign="center";
-   ctx.textBaseline="middle";
    drawCharacter(u.type,u.x,u.y,blue);
 
-   // Health bar background
    ctx.fillStyle="#382c28";
    ctx.fillRect(u.x-23,u.y-29,46,7);
 
-   // Health bar
    const health=Math.max(0,u.hp/u.maxHP);
-   ctx.fillStyle=health>.5?"#51e76d":
-                 health>.25?"#ffd34d":"#ff514b";
+   ctx.fillStyle=health>.5?"#51e76d":health>.25?"#ffd34d":"#ff514b";
    ctx.fillRect(u.x-22,u.y-28,44*health,5);
 
-   // Health bar border
    ctx.strokeStyle="#fff";
    ctx.lineWidth=1;
    ctx.strokeRect(u.x-23,u.y-29,46,7);
@@ -646,33 +575,25 @@ function drawUnits(){
 
 function update(dt){
  if(ended)return;
-
  energy=Math.min(10,energy+dt*0.45);
 
- // Enemy AI deploys troops in either lane
  enemyTimer-=dt;
-
  if(enemyTimer<=0){
   const types=Object.keys(cards);
   const type=types[Math.floor(Math.random()*types.length)];
   const lane=Math.random()<0.5?240:360;
-
   spawn("red",type,lane);
   enemyTimer=4+Math.random()*3;
  }
 
- // Troop movement and attacks
  units.forEach(u=>{
   u.cool-=dt;
-
   let target=null;
   let best=Infinity;
 
-  // Attack nearby enemy troops first
   units.forEach(v=>{
    if(v.team!==u.team&&v.hp>0){
     const d=Math.hypot(v.x-u.x,v.y-u.y);
-
     if(d<u.range+15&&d<best){
      best=d;
      target=v;
@@ -688,21 +609,11 @@ function update(dt){
    return;
   }
 
-  // Find the enemy tower in this lane
   const enemyTeam=u.team==="blue"?"red":"blue";
-
-  const targetTower=towers.find(t=>
-   t.team===enemyTeam&&
-   t.lane===u.lane&&
-   t.hp>0
-  );
+  const targetTower=towers.find(t=>t.team===enemyTeam&&t.lane===u.lane&&t.hp>0);
 
   if(targetTower){
-   const d=Math.hypot(
-    targetTower.x-u.x,
-    targetTower.y-u.y
-   );
-
+   const d=Math.hypot(targetTower.x-u.x,targetTower.y-u.y);
    if(d<65){
     if(u.cool<=0){
      targetTower.hp-=u.damage;
@@ -711,17 +622,13 @@ function update(dt){
    }else{
     u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
    }
-
   }else{
-   // Attack the enemy king tower after the lane tower falls
    const castleY=u.team==="blue"?90:910;
    const dist=Math.abs(u.y-castleY);
-
    if(dist<75){
     if(u.cool<=0){
      if(u.team==="blue")enemyHP-=u.damage;
      else playerHP-=u.damage;
-
      u.cool=u.rate;
     }
    }else{
@@ -730,81 +637,57 @@ function update(dt){
   }
  });
 
- // Remove defeated troops
  units=units.filter(u=>u.hp>0);
 
-// Side towers fire visible projectiles
-towers.forEach(t=>{
- if(t.hp<=0)return;
+ towers.forEach(t=>{
+  if(t.hp<=0)return;
+  t.cool-=dt;
+  let target=null;
+  let best=175;
 
- t.cool-=dt;
-
- let target=null;
- let best=175;
-
- units.forEach(u=>{
-  if(u.team!==t.team&&u.hp>0){
-   const d=Math.hypot(u.x-t.x,u.y-t.y);
-
-   if(d<best){
-    best=d;
-    target=u;
+  units.forEach(u=>{
+   if(u.team!==t.team&&u.hp>0){
+    const d=Math.hypot(u.x-t.x,u.y-t.y);
+    if(d<best){
+     best=d;
+     target=u;
+    }
    }
+  });
+
+  if(target&&t.cool<=0){
+   projectiles.push({x:t.x,y:t.y-20,target:target,team:t.team,damage:22,speed:280});
+   t.cool=1;
   }
  });
 
- if(target&&t.cool<=0){
-  projectiles.push({
-   x:t.x,
-   y:t.y-20,
-   target:target,
-   team:t.team,
-   damage:22,
-   speed:280
-  });
+ projectiles.forEach(p=>{
+  if(p.target.hp<=0){
+   p.remove=true;
+   return;
+  }
+  const dx=p.target.x-p.x;
+  const dy=p.target.y-p.y;
+  const distance=Math.hypot(dx,dy);
+  const movement=p.speed*dt;
 
-  t.cool=1;
- }
-});
+  if(distance<=movement+12){
+   p.target.hp-=p.damage;
+   impacts.push({x:p.target.x,y:p.target.y,life:0.25});
+   p.remove=true;
+  }else{
+   p.x+=(dx/distance)*movement;
+   p.y+=(dy/distance)*movement;
+  }
+ });
 
-// Move projectiles and apply damage
-projectiles.forEach(p=>{
- if(p.target.hp<=0){
-  p.remove=true;
-  return;
- }
-
- const dx=p.target.x-p.x;
- const dy=p.target.y-p.y;
- const distance=Math.hypot(dx,dy);
- const movement=p.speed*dt;
-
- if(distance<=movement+12){
-  p.target.hp-=p.damage;
-  impacts.push({
-   x:p.target.x,
-   y:p.target.y,
-   life:0.25
-  });
-  p.remove=true;
- }else{
-  p.x+=(dx/distance)*movement;
-  p.y+=(dy/distance)*movement;
- }
-});
-
-projectiles=projectiles.filter(p=>!p.remove);
-
-// Update impact effects
-impacts.forEach(i=>i.life-=dt);
-impacts=impacts.filter(i=>i.life>0);
+ projectiles=projectiles.filter(p=>!p.remove);
+ impacts.forEach(i=>i.life-=dt);
+ impacts=impacts.filter(i=>i.life>0);
  
- // Victory and defeat
  if(enemyHP<=0||playerHP<=0){
   ended=true;
-  message.textContent=enemyHP<=0
-   ?"🏆 VICTORY! Enemy king defeated!"
-   :"💔 DEFEAT! Your king was defeated.";
+  message.textContent=enemyHP<=0?"🏆 VICTORY! Enemy king defeated!":"💔 DEFEAT! Your king was defeated.";
  }
 
  updateStats();
@@ -821,9 +704,13 @@ function frame(t){
  drawCombatEffects();
  requestAnimationFrame(frame);
 }
+
 document.getElementById("restart").onclick=reset;
-reset();
-requestAnimationFrame(frame);
+
+window.onload = () => {
+ reset();
+ requestAnimationFrame(frame);
+};
 </script>
 </body>
 </html>
