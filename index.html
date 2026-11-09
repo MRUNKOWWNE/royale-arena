@@ -128,7 +128,38 @@ function spawn(team,type,x){
   cool:0
  });
 }
+canvas.addEventListener("pointerdown",e=>{
+ if(ended)return;
 
+ const r=canvas.getBoundingClientRect();
+
+ const x=(e.clientX-r.left)/r.width*W;
+ const y=(e.clientY-r.top)/r.height*H;
+
+ // Only allow deployment on the player's side
+ if(y<570){
+  message.textContent="Deploy troops below the river!";
+  return;
+ }
+
+ const cost=cards[selected].cost;
+
+ if(energy<cost){
+  message.textContent="Not enough energy!";
+  return;
+ }
+
+ // Select left or right lane
+ const lane=x<300?240:360;
+
+ spawn("blue",selected,lane);
+
+ energy-=cost;
+
+ message.textContent=selected.toUpperCase()+" deployed!";
+
+ updateStats();
+});
 
 function drawArena(){
   // Lush grass background
