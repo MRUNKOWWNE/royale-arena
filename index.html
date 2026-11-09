@@ -454,7 +454,7 @@ function drawUnits(){
     ctx.font="31px Arial";
     ctx.textAlign="center";
     ctx.textBaseline="middle";
-    ctx.fillText(cards[u.type].emoji,u.x,u.y);
+    drawCharacter(u.type,u.x,u.y,blue);
 
     // Health bar background
     ctx.fillStyle="#382c28";
