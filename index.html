@@ -62,7 +62,9 @@ const W=600,H=1000;
 let playerHP,enemyHP,energy,units,selected,ended,lastTime;
 let enemyTimer,clock;
 let towers=[];
-
+let projectiles=[];
+let impacts=[];
+ 
  const cards={
  knight:{cost:3,emoji:"⚔️",hp:150,damage:25,range:35,speed:55,rate:0.8},
  archer:{cost:3,emoji:"🏹",hp:80,damage:18,range:125,speed:43,rate:1},
@@ -87,6 +89,8 @@ function reset(){
  {team:"blue",lane:240,x:240,y:760,hp:700,maxHP:700,cool:0},
  {team:"blue",lane:360,x:360,y:760,hp:700,maxHP:700,cool:0}
 ];
+ projectiles=[];
+impacts=[];
  enemyTimer=3;clock=0;lastTime=0;
  message.textContent="Choose a troop card, then tap your side!";
  document.querySelectorAll(".card").forEach(c=>
@@ -501,6 +505,53 @@ function drawTowerHealthBars(){
   ctx.strokeRect(t.x-32,t.y-58,64,9);
  });
 }
+ function drawCombatEffects(){
+
+ // Tower projectiles
+ projectiles.forEach(p=>{
+  const color=p.team==="blue"?"#48caff":"#ff5757";
+
+  // Projectile trail
+  ctx.strokeStyle=color;
+  ctx.globalAlpha=0.45;
+  ctx.lineWidth=5;
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y);
+  ctx.lineTo(
+   p.x-(p.target.x-p.x)*0.08,
+   p.y-(p.target.y-p.y)*0.08
+  );
+  ctx.stroke();
+
+  // Glowing projectile
+  ctx.globalAlpha=1;
+  ctx.fillStyle=color;
+  ctx.shadowColor=color;
+  ctx.shadowBlur=15;
+
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,7,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.shadowBlur=0;
+ });
+
+ // Impact flashes
+ impacts.forEach(i=>{
+  const size=12+(1-i.life/0.25)*18;
+
+  ctx.globalAlpha=i.life/0.25;
+  ctx.strokeStyle="#fff4a3";
+  ctx.lineWidth=4;
+
+  ctx.beginPath();
+  ctx.arc(i.x,i.y,size,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.globalAlpha=1;
+ });
+}
+ 
 function drawUnits(){
   units.forEach(u=>{
     const blue=u.team==="blue";
@@ -633,32 +684,72 @@ function update(dt){
  // Remove defeated troops
  units=units.filter(u=>u.hp>0);
 
- // Side towers defend themselves
- towers.forEach(t=>{
-  if(t.hp<=0)return;
+// Side towers fire visible projectiles
+towers.forEach(t=>{
+ if(t.hp<=0)return;
 
-  t.cool-=dt;
+ t.cool-=dt;
 
-  let target=null;
-  let best=175;
+ let target=null;
+ let best=175;
 
-  units.forEach(u=>{
-   if(u.team!==t.team&&u.hp>0){
-    const d=Math.hypot(u.x-t.x,u.y-t.y);
+ units.forEach(u=>{
+  if(u.team!==t.team&&u.hp>0){
+   const d=Math.hypot(u.x-t.x,u.y-t.y);
 
-    if(d<best){
-     best=d;
-     target=u;
-    }
+   if(d<best){
+    best=d;
+    target=u;
    }
-  });
-
-  if(target&&t.cool<=0){
-   target.hp-=22;
-   t.cool=1;
   }
  });
 
+ if(target&&t.cool<=0){
+  projectiles.push({
+   x:t.x,
+   y:t.y-20,
+   target:target,
+   team:t.team,
+   damage:22,
+   speed:280
+  });
+
+  t.cool=1;
+ }
+});
+
+// Move projectiles and apply damage
+projectiles.forEach(p=>{
+ if(p.target.hp<=0){
+  p.remove=true;
+  return;
+ }
+
+ const dx=p.target.x-p.x;
+ const dy=p.target.y-p.y;
+ const distance=Math.hypot(dx,dy);
+ const movement=p.speed*dt;
+
+ if(distance<=movement+12){
+  p.target.hp-=p.damage;
+  impacts.push({
+   x:p.target.x,
+   y:p.target.y,
+   life:0.25
+  });
+  p.remove=true;
+ }else{
+  p.x+=(dx/distance)*movement;
+  p.y+=(dy/distance)*movement;
+ }
+});
+
+projectiles=projectiles.filter(p=>!p.remove);
+
+// Update impact effects
+impacts.forEach(i=>i.life-=dt);
+impacts=impacts.filter(i=>i.life>0);
+ 
  // Victory and defeat
  if(enemyHP<=0||playerHP<=0){
   ended=true;
@@ -678,6 +769,7 @@ function frame(t){
  drawArena();
  drawTowerHealthBars();
  drawUnits();
+ drawCombatEffects();
  requestAnimationFrame(frame);
 }
 document.getElementById("restart").onclick=reset;
