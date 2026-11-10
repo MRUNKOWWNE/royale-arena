@@ -478,6 +478,7 @@ function spawn(team,type,lane){
   });
 }
 
+
 canvas.addEventListener("pointerdown",event=>{
   if(ended || paused) return;
 
@@ -494,53 +495,40 @@ canvas.addEventListener("pointerdown",event=>{
   if(x<0 || x>W || y<0 || y>H) return;
 
   if(y<500){
-    $("message").textContent = "Deploy troops on your side, below the river!";
+    $("message").textContent =
+      "Deploy troops on your side, below the river!";
     return;
   }
 
-  const cost = cards[selected].cost;
-  if(energy<cost){
+  const playedCard = selected;
+
+  if(!playedCard || !hand.includes(playedCard)) return;
+
+  const cost = cards[playedCard].cost;
+
+  if(energy < cost){
     $("message").textContent = "Not enough energy!";
     return;
   }
 
   const lane = x<W/2 ? 205 : 395;
+
   energy -= cost;
-  spawn("blue",selected,lane);
-  $("message").textContent = cards[selected].name+" deployed!";
-  const playedCard = selected;
-const cost = cards[playedCard].cost;
+  spawn("blue",playedCard,lane);
 
-if(energy < cost){
-  $("message").textContent = "Not enough energy!";
-  return;
-}
+  hand = hand.filter(type => type !== playedCard);
+  drawPile.push(playedCard);
+  hand.push(drawPile.shift());
 
-const lane = x < W/2 ? 205 : 395;
+  selected = hand[0];
 
-energy -= cost;
+  $("message").textContent =
+    cards[playedCard].name + " deployed! New card drawn.";
 
-spawn("blue",playedCard,lane);
-
-// Remove the played card
-hand = hand.filter(type => type !== playedCard);
-
-// Put it at the bottom of the deck
-drawPile.push(playedCard);
-
-// Draw a replacement card
-hand.push(drawPile.shift());
-
-// Select the first card in the hand
-selected = hand[0];
-
-$("message").textContent =
-  cards[playedCard].name + " deployed! New card drawn.";
-
-updateUI();
-updateCardButtons();
-  
+  updateUI();
+  updateCardButtons();
 });
+
   
 // =====================================
 // 5. BATTLEFIELD DRAWING
