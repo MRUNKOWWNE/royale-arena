@@ -205,6 +205,61 @@ canvas{
   .card .emoji{font-size:20px}
   #message{min-height:18px}
 }
+  
+/* =================================
+   ROYALE ARENA - 3D TROOP PORTRAITS
+================================= */
+
+.portrait {
+  display: block;
+  width: 100%;
+  height: 65px;
+  margin: 3px auto;
+  background-image: url("troops.png");
+  background-repeat: no-repeat;
+  background-size: 400% 200%;
+  background-position: 0% 0%;
+  border-radius: 9px;
+  background-color: #263951;
+  box-shadow: inset 0 0 8px #0008;
+}
+
+/* TOP ROW */
+
+.portrait-knight {
+  background-position: 0% 0%;
+}
+
+.portrait-archer {
+  background-position: 33.333% 0%;
+}
+
+.portrait-giant {
+  background-position: 66.666% 0%;
+}
+
+.portrait-wizard {
+  background-position: 100% 0%;
+}
+
+/* BOTTOM ROW */
+
+.portrait-spearman {
+  background-position: 0% 100%;
+}
+
+.portrait-guardian {
+  background-position: 33.333% 100%;
+}
+
+.portrait-rogue {
+  background-position: 66.666% 100%;
+}
+
+.portrait-fire {
+  background-position: 100% 100%;
+}
+
 </style>
 </head>
 
@@ -233,47 +288,57 @@ canvas{
     <span id="energy-number">5.0</span>
   </div>
 
+
 <div id="cards">
   <button class="card selected" data-card="knight">
-    <span class="cost">3</span><span class="emoji">⚔️</span>
+    <span class="cost">3</span>
+    <span class="portrait portrait-knight"></span>
     <span class="name">KNIGHT</span>
   </button>
 
   <button class="card" data-card="archer">
-    <span class="cost">3</span><span class="emoji">🏹</span>
+    <span class="cost">3</span>
+    <span class="portrait portrait-archer"></span>
     <span class="name">ARCHER</span>
   </button>
 
   <button class="card" data-card="giant">
-    <span class="cost">5</span><span class="emoji">🗿</span>
+    <span class="cost">5</span>
+    <span class="portrait portrait-giant"></span>
     <span class="name">GIANT</span>
   </button>
 
   <button class="card" data-card="wizard">
-    <span class="cost">4</span><span class="emoji">🧙</span>
+    <span class="cost">4</span>
+    <span class="portrait portrait-wizard"></span>
     <span class="name">WIZARD</span>
   </button>
 
   <button class="card" data-card="spearman">
-    <span class="cost">2</span><span class="emoji">🔱</span>
+    <span class="cost">2</span>
+    <span class="portrait portrait-spearman"></span>
     <span class="name">SPEARMAN</span>
   </button>
 
   <button class="card" data-card="guardian">
-    <span class="cost">4</span><span class="emoji">🛡️</span>
+    <span class="cost">4</span>
+    <span class="portrait portrait-guardian"></span>
     <span class="name">GUARDIAN</span>
   </button>
 
   <button class="card" data-card="rogue">
-    <span class="cost">2</span><span class="emoji">🗡️</span>
+    <span class="cost">2</span>
+    <span class="portrait portrait-rogue"></span>
     <span class="name">ROGUE</span>
   </button>
 
   <button class="card" data-card="fire">
-    <span class="cost">5</span><span class="emoji">🔥</span>
+    <span class="cost">5</span>
+    <span class="portrait portrait-fire"></span>
     <span class="name">FIRE ELEMENTAL</span>
   </button>
 </div>
+
 <div id="deck-info">
   <span class="deck-back">🂠</span>
   <span>DRAW DECK</span>
