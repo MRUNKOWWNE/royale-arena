@@ -128,7 +128,29 @@ canvas{
   grid-template-columns:repeat(4,minmax(0,1fr));
   gap:7px;
 }
+#deck-info{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:#1d2b40;
+  border:1px solid #526783;
+  border-radius:10px;
+  padding:7px;
+  font-size:12px;
+  font-weight:bold;
+  color:#dce8f7;
+}
 
+.deck-back{
+  font-size:23px;
+  color:#ffd66b;
+}
+
+#deck-count{
+  color:#72eaff;
+  font-size:16px;
+}
 .card{
   min-width:0;
   background:linear-gradient(160deg,#30445e,#1b2b41);
@@ -252,7 +274,11 @@ canvas{
     <span class="name">FIRE ELEMENTAL</span>
   </button>
 </div>
-
+<div id="deck-info">
+  <span class="deck-back">🂠</span>
+  <span>DRAW DECK</span>
+  <strong id="deck-count">4</strong>
+</div>
 <div id="bottom-row">
   <button class="action" id="pause">⏸ PAUSE</button>
   <button class="action" id="restart">↻ NEW BATTLE</button>
@@ -313,7 +339,24 @@ const cards = {
     color:"#ff7043",name:"Fire Elemental"
   }
 };
+  
+function shuffleDeck(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+  return array;
+}
 
+function resetDeck(){
+  const deck=shuffleDeck(Object.keys(cards));
+
+  hand=deck.splice(0,4);
+  drawPile=deck;
+
+  selected=hand[0];
+}
+  
 let units = [];
 let towers = [];
 let projectiles = [];
@@ -323,7 +366,9 @@ let playerHP = 1200;
 let enemyHP = 1200;
 let energy = 5;
 let enemyEnergy = 5;
-let selected = "knight";
+let selected = "";
+let hand = [];
+let drawPile = [];
 let ended = false;
 let paused = false;
 let elapsed = 0;
@@ -331,7 +376,7 @@ let enemyTimer = 2;
 let lastTime = 0;
 let unitId = 0;
 let animTime = 0;
-  
+  resetDeck();
 // =====================================
 // 2. BATTLE RESET
 // =====================================
@@ -387,21 +432,18 @@ function updateUI(){
 function updateCardButtons(){
   document.querySelectorAll(".card").forEach(button=>{
     const type = button.dataset.card;
+    const inHand = hand.includes(type);
+
+    button.style.display = inHand ? "" : "none";
     button.classList.toggle("selected",type===selected);
-    button.disabled = energy < cards[type].cost || ended;
+
+    button.disabled =
+      !inHand || energy < cards[type].cost || ended;
   });
+
+  $("deck-count").textContent = drawPile.length;
 }
-
-document.querySelectorAll(".card").forEach(button=>{
-  button.addEventListener("click",()=>{
-    if(ended || paused) return;
-    selected = button.dataset.card;
-    updateCardButtons();
-    $("message").textContent =
-      cards[selected].name+" selected. Tap your side to deploy.";
-  });
-});
-
+  
 // =====================================
 // 4. TROOP DEPLOYMENT
 // =====================================
@@ -466,10 +508,40 @@ canvas.addEventListener("pointerdown",event=>{
   energy -= cost;
   spawn("blue",selected,lane);
   $("message").textContent = cards[selected].name+" deployed!";
-  updateUI();
-  updateCardButtons();
-});
+  const playedCard = selected;
+const cost = cards[playedCard].cost;
 
+if(energy < cost){
+  $("message").textContent = "Not enough energy!";
+  return;
+}
+
+const lane = x < W/2 ? 205 : 395;
+
+energy -= cost;
+
+spawn("blue",playedCard,lane);
+
+// Remove the played card
+hand = hand.filter(type => type !== playedCard);
+
+// Put it at the bottom of the deck
+drawPile.push(playedCard);
+
+// Draw a replacement card
+hand.push(drawPile.shift());
+
+// Select the first card in the hand
+selected = hand[0];
+
+$("message").textContent =
+  cards[playedCard].name + " deployed! New card drawn.";
+
+updateUI();
+updateCardButtons();
+  
+});
+  
 // =====================================
 // 5. BATTLEFIELD DRAWING
 // =====================================
