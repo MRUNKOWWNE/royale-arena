@@ -572,7 +572,8 @@ canvas.addEventListener("pointerdown",event=>{
 
   energy -= cost;
   spawn("blue",playedCard,lane);
-
+playSound("deploy");
+  
   hand = hand.filter(type => type !== playedCard);
   drawPile.push(playedCard);
   hand.push(drawPile.shift());
