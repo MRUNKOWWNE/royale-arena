@@ -889,20 +889,85 @@ function drawUnit(u){
   ctx.ellipse(-7,10+moving,6,5,0,0,Math.PI*2);
   ctx.ellipse(7,10-moving,6,5,0,0,Math.PI*2);
   ctx.fill();
-
-  // Body
-  const body=ctx.createLinearGradient(-u.radius,-u.radius,u.radius,u.radius);
+  
+  // Unique body shape for every troop
+  const body=ctx.createLinearGradient(-20,-20,20,20);
   body.addColorStop(0,"#ffffff");
   body.addColorStop(.25,u.color);
   body.addColorStop(1,dark);
 
   ctx.fillStyle=body;
-  ctx.beginPath();
-  ctx.arc(0,0,u.radius,0,Math.PI*2);
-  ctx.fill();
-
   ctx.strokeStyle=dark;
-  ctx.lineWidth=4;
+  ctx.lineWidth=3;
+
+  ctx.beginPath();
+
+  if(u.type==="knight"){
+    // Armored knight
+    ctx.moveTo(-13,-13);
+    ctx.lineTo(13,-13);
+    ctx.lineTo(16,9);
+    ctx.lineTo(0,19);
+    ctx.lineTo(-16,9);
+  }
+  else if(u.type==="archer"){
+    // Light archer cloak
+    ctx.moveTo(0,-18);
+    ctx.lineTo(15,-5);
+    ctx.lineTo(11,17);
+    ctx.lineTo(-11,17);
+    ctx.lineTo(-15,-5);
+  }
+  else if(u.type==="giant"){
+    // Massive giant torso
+    ctx.roundRect(-19,-17,38,37,9);
+  }
+  else if(u.type==="wizard"){
+    // Wizard robe
+    ctx.moveTo(-12,-17);
+    ctx.lineTo(12,-17);
+    ctx.lineTo(20,19);
+    ctx.lineTo(-20,19);
+  }
+  else if(u.type==="spearman"){
+    // Slim spear fighter
+    ctx.moveTo(-9,-17);
+    ctx.lineTo(9,-17);
+    ctx.lineTo(13,13);
+    ctx.lineTo(0,19);
+    ctx.lineTo(-13,13);
+  }
+  else if(u.type==="guardian"){
+    // Heavy armored guardian
+    ctx.moveTo(-17,-14);
+    ctx.lineTo(17,-14);
+    ctx.lineTo(20,7);
+    ctx.lineTo(0,20);
+    ctx.lineTo(-20,7);
+  }
+  else if(u.type==="rogue"){
+    // Hooded rogue
+    ctx.moveTo(0,-19);
+    ctx.lineTo(14,-8);
+    ctx.lineTo(12,12);
+    ctx.lineTo(0,18);
+    ctx.lineTo(-12,12);
+    ctx.lineTo(-14,-8);
+  }
+  else if(u.type==="fire"){
+    // Fire elemental silhouette
+    ctx.moveTo(-15,15);
+    ctx.lineTo(-19,-3);
+    ctx.lineTo(-8,-12);
+    ctx.lineTo(-3,-22);
+    ctx.lineTo(5,-12);
+    ctx.lineTo(14,-20);
+    ctx.lineTo(19,0);
+    ctx.lineTo(12,17);
+  }
+
+  ctx.closePath();
+  ctx.fill();
   ctx.stroke();
 
   // Team badge
