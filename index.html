@@ -1,716 +1,1050 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Royale Arena</title>
+<meta name="theme-color" content="#101827">
+<title>ROYALE ARENA</title>
+
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;background:#101b2c;color:white;
- font-family:Arial,sans-serif;text-align:center;
- overflow:hidden;touch-action:manipulation
+  margin:0;
+  background:#101827;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  overflow:hidden;
+  user-select:none;
 }
-header{height:54px;background:#172b46;
- display:flex;align-items:center;justify-content:center;
- font-weight:bold;letter-spacing:2px;font-size:20px}
-#stats{display:flex;justify-content:space-around;
- padding:8px;background:#203958;font-weight:bold}
-canvas{display:block;width:100%;height:calc(100dvh - 238px);
- background:#75a94d;touch-action:none}
-#cards{height:112px;display:flex;justify-content:center;
- gap:7px;padding:8px;background:#172b46}
-.card{flex:1;max-width:90px;border:2px solid #8299b4;
- border-radius:9px;background:#294365;color:white;
- font-weight:bold;font-size:12px;padding:6px 2px}
-.card b{display:block;font-size:25px;margin:4px}
-.card small{color:#ffd65c}
-.card.selected{border:3px solid #ffe15b;background:#42648e}
-#message{height:30px;background:#101b2c;padding:6px}
-button{cursor:pointer}
-#restart{background:#f5c94b;border:0;border-radius:8px;
- padding:10px 20px;font-weight:bold;margin:4px}
+#app{
+  height:100dvh;
+  max-width:700px;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+  padding:8px;
+  gap:7px;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:42px;
+}
+.logo{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  color:#ffd66b;
+  text-shadow:0 2px 12px #ff9d2670;
+}
+#timer{
+  background:#26364d;
+  border:1px solid #526783;
+  padding:7px 13px;
+  border-radius:12px;
+  font-weight:bold;
+  font-variant-numeric:tabular-nums;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+.stat{
+  background:#1d2b40;
+  border:1px solid #354b67;
+  border-radius:10px;
+  padding:7px 5px;
+  text-align:center;
+  font-size:12px;
+}
+.stat strong{
+  display:block;
+  font-size:16px;
+  margin-top:3px;
+}
+#arena-wrap{
+  flex:1;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:#15243a;
+  border:2px solid #526783;
+  border-radius:14px;
+  box-shadow:0 8px 28px #0007;
+}
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  aspect-ratio:2/3;
+  touch-action:none;
+}
+#message{
+  min-height:24px;
+  text-align:center;
+  font-size:13px;
+  color:#dce8f7;
+  padding:3px;
+}
+#energy-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#1d2b40;
+  border:1px solid #354b67;
+  padding:7px 10px;
+  border-radius:10px;
+}
+#energy-label{font-size:12px;font-weight:bold;white-space:nowrap}
+#energy-track{
+  flex:1;
+  height:12px;
+  background:#0d1727;
+  border-radius:20px;
+  overflow:hidden;
+}
+#energy-fill{
+  height:100%;
+  width:50%;
+  background:linear-gradient(90deg,#12b9ed,#66e9ff);
+  border-radius:20px;
+  transition:width .15s;
+}
+#energy-number{
+  min-width:34px;
+  text-align:right;
+  font-weight:bold;
+  color:#72eaff;
+}
+#cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.card{
+  min-width:0;
+  background:linear-gradient(160deg,#30445e,#1b2b41);
+  color:white;
+  border:2px solid #526783;
+  border-radius:12px;
+  padding:8px 3px;
+  min-height:82px;
+  cursor:pointer;
+  font-weight:bold;
+  position:relative;
+}
+.card.selected{
+  border-color:#ffd45c;
+  box-shadow:0 0 12px #ffcf4d80;
+  transform:translateY(-2px);
+}
+.card:disabled{opacity:.42}
+.card .emoji{display:block;font-size:25px;margin-bottom:4px}
+.card .name{display:block;font-size:11px}
+.card .cost{
+  position:absolute;
+  top:4px;
+  right:5px;
+  background:#147fae;
+  border-radius:20px;
+  padding:2px 6px;
+  font-size:10px;
+}
+#bottom-row{
+  display:flex;
+  gap:8px;
+  padding-bottom:3px;
+}
+.action{
+  flex:1;
+  border:0;
+  border-radius:10px;
+  padding:10px;
+  color:white;
+  background:#314966;
+  font-weight:bold;
+  font-size:13px;
+}
+#restart{background:#a34a36}
+@media(max-height:650px){
+  #app{gap:4px;padding:5px}
+  header{min-height:32px}
+  .logo{font-size:17px}
+  .stat{padding:4px}
+  .card{min-height:66px;padding:5px 2px}
+  .card .emoji{font-size:20px}
+  #message{min-height:18px}
+}
 </style>
 </head>
+
 <body>
-<header>⚔ ROYALE ARENA</header>
-<div id="stats">
- <span>🔵 You: <span id="hp">1000</span></span>
- <span>⚡ <span id="energy">5</span>/10</span>
- <span>🔴 Enemy: <span id="ehp">1000</span></span>
+<div id="app">
+  <header>
+    <div class="logo">⚔ ROYALE ARENA</div>
+    <div id="timer">03:00</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">🔵 YOUR KING<strong id="player-hp">1200</strong></div>
+    <div class="stat">⚡ ENERGY<strong id="energy-top">5.0 / 10</strong></div>
+    <div class="stat">🔴 ENEMY KING<strong id="enemy-hp">1200</strong></div>
+  </div>
+
+  <div id="arena-wrap">
+    <canvas id="game" width="600" height="900"></canvas>
+  </div>
+
+  <div id="message">Choose a card, then tap your side of the battlefield.</div>
+
+  <div id="energy-row">
+    <span id="energy-label">ENERGY</span>
+    <div id="energy-track"><div id="energy-fill"></div></div>
+    <span id="energy-number">5.0</span>
+  </div>
+
+  <div id="cards">
+    <button class="card selected" data-card="knight">
+      <span class="cost">3</span><span class="emoji">⚔️</span>
+      <span class="name">KNIGHT</span>
+    </button>
+    <button class="card" data-card="archer">
+      <span class="cost">3</span><span class="emoji">🏹</span>
+      <span class="name">ARCHER</span>
+    </button>
+    <button class="card" data-card="giant">
+      <span class="cost">5</span><span class="emoji">🗿</span>
+      <span class="name">GIANT</span>
+    </button>
+    <button class="card" data-card="wizard">
+      <span class="cost">4</span><span class="emoji">🧙</span>
+      <span class="name">WIZARD</span>
+    </button>
+  </div>
+
+  <div id="bottom-row">
+    <button class="action" id="pause">⏸ PAUSE</button>
+    <button class="action" id="restart">↻ NEW BATTLE</button>
+  </div>
 </div>
-<canvas id="game"></canvas>
-<div id="message">Choose a troop card, then tap your side of the arena!</div>
-<div id="cards">
- <button class="card selected" data-id="knight">🛡<b>⚔️</b>Knight<small>3 Energy</small></button>
- <button class="card" data-id="archer">🏹<b>🏹</b>Archer<small>3 Energy</small></button>
- <button class="card" data-id="giant">🗿<b>🗿</b>Giant<small>5 Energy</small></button>
- <button class="card" data-id="wizard">🔥<b>🧙</b>Wizard<small>4 Energy</small></button>
-</div>
-<div><button id="restart">↻ Restart Battle</button></div>
 
 <script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-const hpEl=document.getElementById("hp");
-const ehpEl=document.getElementById("ehp");
-const energyEl=document.getElementById("energy");
-const message=document.getElementById("message");
+"use strict";
 
-const W=600,H=1000;
-let playerHP,enemyHP,energy,units,selected,ended,lastTime;
-let enemyTimer,clock;
-let towers=[];
-let projectiles=[];
-let impacts=[];
- 
-const cards={
- knight:{cost:3,emoji:"⚔️",hp:150,damage:25,range:35,speed:55,rate:0.8},
- archer:{cost:3,emoji:"🏹",hp:80,damage:18,range:125,speed:43,rate:1},
- giant:{cost:5,emoji:"🗿",hp:380,damage:40,range:40,speed:25,rate:1.4},
- wizard:{cost:4,emoji:"🧙",hp:110,damage:35,range:105,speed:34,rate:1.2}
+// =====================================
+// 1. GAME SETTINGS
+// =====================================
+const W = 600;
+const H = 900;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const $ = id => document.getElementById(id);
+
+const cards = {
+  knight:{cost:3,hp:190,damage:32,range:38,speed:48,rate:.85,color:"#d9e4f2",name:"Knight"},
+  archer:{cost:3,hp:95,damage:23,range:145,speed:43,rate:1.05,color:"#65d68a",name:"Archer"},
+  giant:{cost:5,hp:520,damage:58,range:43,speed:23,rate:1.35,color:"#d99a62",name:"Giant"},
+  wizard:{cost:4,hp:135,damage:43,range:125,speed:35,rate:1.15,color:"#b18aff",name:"Wizard"}
 };
 
-function resize(){
- const r=canvas.getBoundingClientRect();
- if(r.width>0 && r.height>0){
-  const d=Math.min(window.devicePixelRatio||1,2);
-  canvas.width=r.width*d;
-  canvas.height=r.height*d;
-  ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
- }
-}
-window.addEventListener("resize",resize);
+let units = [];
+let towers = [];
+let projectiles = [];
+let particles = [];
 
-function reset(){
- playerHP=1000;enemyHP=1000;energy=5;
- units=[];selected="knight";ended=false;
- towers=[
- {team:"red",lane:240,x:240,y:240,hp:700,maxHP:700,cool:0},
- {team:"red",lane:360,x:360,y:240,hp:700,maxHP:700,cool:0},
- {team:"blue",lane:240,x:240,y:760,hp:700,maxHP:700,cool:0},
- {team:"blue",lane:360,x:360,y:760,hp:700,maxHP:700,cool:0}
-];
- projectiles=[];
- impacts=[];
- enemyTimer=3;clock=0;lastTime=0;
- message.textContent="Choose a troop card, then tap your side!";
- document.querySelectorAll(".card").forEach(c=>
- c.classList.toggle("selected",c.dataset.id===selected));
- updateStats();
- resize();
+let playerHP = 1200;
+let enemyHP = 1200;
+let energy = 5;
+let enemyEnergy = 5;
+let selected = "knight";
+let ended = false;
+let paused = false;
+let elapsed = 0;
+let enemyTimer = 2;
+let lastTime = 0;
+let unitId = 0;
+
+// =====================================
+// 2. BATTLE RESET
+// =====================================
+function resetGame(){
+  units = [];
+  projectiles = [];
+  particles = [];
+
+  playerHP = 1200;
+  enemyHP = 1200;
+  energy = 5;
+  enemyEnergy = 5;
+  elapsed = 0;
+  enemyTimer = 2;
+  ended = false;
+  paused = false;
+  lastTime = 0;
+  unitId = 0;
+
+  towers = [
+    {team:"red",lane:205,x:205,y:245,hp:760,maxHP:760,cool:0},
+    {team:"red",lane:395,x:395,y:245,hp:760,maxHP:760,cool:.5},
+    {team:"blue",lane:205,x:205,y:655,hp:760,maxHP:760,cool:0},
+    {team:"blue",lane:395,x:395,y:655,hp:760,maxHP:760,cool:.5}
+  ];
+
+  paused = false;
+  $("pause").textContent = "⏸ PAUSE";
+  $("message").textContent =
+    "Choose a card, then tap your side of the battlefield.";
+  updateUI();
+  updateCardButtons();
 }
 
-function updateStats(){
- hpEl.textContent=Math.max(0,Math.ceil(playerHP));
- ehpEl.textContent=Math.max(0,Math.ceil(enemyHP));
- energyEl.textContent=energy.toFixed(1);
+// =====================================
+// 3. USER INTERFACE
+// =====================================
+function updateUI(){
+  $("player-hp").textContent = Math.max(0,Math.ceil(playerHP));
+  $("enemy-hp").textContent = Math.max(0,Math.ceil(enemyHP));
+  $("energy-top").textContent = energy.toFixed(1)+" / 10";
+  $("energy-number").textContent = energy.toFixed(1);
+  $("energy-fill").style.width = (energy*10)+"%";
+
+  const remaining = Math.max(0,180-elapsed);
+  const minutes = Math.floor(remaining/60);
+  const seconds = Math.floor(remaining%60);
+  $("timer").textContent =
+    String(minutes).padStart(2,"0")+":"+
+    String(seconds).padStart(2,"0");
 }
 
-document.querySelectorAll(".card").forEach(card=>{
- card.addEventListener("click",()=>{
- if(ended)return;
- selected=card.dataset.id;
- document.querySelectorAll(".card").forEach(c=>
- c.classList.toggle("selected",c===card));
- });
+function updateCardButtons(){
+  document.querySelectorAll(".card").forEach(button=>{
+    const type = button.dataset.card;
+    button.classList.toggle("selected",type===selected);
+    button.disabled = energy < cards[type].cost || ended;
+  });
+}
+
+document.querySelectorAll(".card").forEach(button=>{
+  button.addEventListener("click",()=>{
+    if(ended || paused) return;
+    selected = button.dataset.card;
+    updateCardButtons();
+    $("message").textContent =
+      cards[selected].name+" selected. Tap your side to deploy.";
+  });
 });
 
-function spawn(team,type,x){
- const c=cards[type];
- units.push({
-  team,type,x,
-  lane:x,
-  y:team==="blue"?830:170,
-  hp:c.hp,
-  maxHP:c.hp,
-  damage:c.damage,
-  range:c.range,
-  speed:c.speed,
-  rate:c.rate,
-  cool:0
- });
-}
- 
-canvas.addEventListener("pointerdown",e=>{
- if(ended)return;
+// =====================================
+// 4. TROOP DEPLOYMENT
+// =====================================
+function spawn(team,type,lane){
+  const data = cards[type];
+  const blue = team==="blue";
 
- const r=canvas.getBoundingClientRect();
- const x=(e.clientX-r.left)/r.width*W;
- const y=(e.clientY-r.top)/r.height*H;
-
- if(y<570){
-  message.textContent="Deploy troops below the river!";
-  return;
- }
-
- const cost=cards[selected].cost;
-
- if(energy<cost){
-  message.textContent="Not enough energy!";
-  return;
- }
-
- const lane=x<300?240:360;
- spawn("blue",selected,lane);
- energy-=cost;
-
- message.textContent=selected.toUpperCase()+" deployed!";
- updateStats();
-});
- 
-function drawArena(){
- const grass=ctx.createLinearGradient(0,0,600,1000);
- grass.addColorStop(0,"#9bcf65");
- grass.addColorStop(.5,"#72ae49");
- grass.addColorStop(1,"#548a3b");
- ctx.fillStyle=grass;
- ctx.fillRect(0,0,W,H);
-
- for(let i=0;i<350;i++){
-   const x=(i*137)%600;
-   const y=(i*193)%1000;
-   ctx.strokeStyle=i%2?"#a8d76c":"#4e8c38";
-   ctx.lineWidth=1.5;
-   ctx.beginPath();
-   ctx.moveTo(x,y);
-   ctx.lineTo(x+3,y-5);
-   ctx.stroke();
- }
-
- ctx.fillStyle="#a99a77";
- ctx.fillRect(280,0,40,1000);
-
- for(let i=0;i<35;i++){
-   const y=i*30;
-   ctx.fillStyle=i%2?"#c6b68f":"#948666";
-   ctx.fillRect(283,y,16,24);
- }
-
- for(let i=0;i<65;i++){
-   const x=(i*113)%600;
-   const y=(i*157)%1000;
-
-   ctx.fillStyle="#398044";
-   ctx.beginPath();
-   ctx.arc(x,y,3,0,Math.PI*2);
-   ctx.fill();
-
-   ctx.fillStyle=["#fff0a1","#f8b6c9","#fff"][i%3];
-   ctx.beginPath();
-   ctx.arc(x+2,y-2,2.5,0,Math.PI*2);
-   ctx.fill();
- }
-
- function tree(x,y){
-   ctx.fillStyle="#76502d";
-   ctx.fillRect(x-4,y,8,17);
-
-   ctx.fillStyle="#286b35";
-   ctx.beginPath();
-   ctx.arc(x,y-5,15,0,Math.PI*2);
-   ctx.fill();
-
-   ctx.fillStyle="#499c45";
-   ctx.beginPath();
-   ctx.arc(x-5,y-10,9,0,Math.PI*2);
-   ctx.fill();
- }
-
- [
-   [45,90],[545,100],[55,390],[540,380],
-   [45,650],[555,650],[65,950],[530,950]
- ].forEach(p=>tree(p[0],p[1]));
-
- for(let i=0;i<24;i++){
-   const x=(i*173)%600;
-   const y=(i*239)%1000;
-
-   ctx.fillStyle="#817d70";
-   ctx.beginPath();
-   ctx.ellipse(x,y,6,4,0,0,Math.PI*2);
-   ctx.fill();
-
-   ctx.fillStyle="#aaa696";
-   ctx.beginPath();
-   ctx.arc(x-2,y-2,2,0,Math.PI*2);
-   ctx.fill();
- }
-
- const water=ctx.createLinearGradient(0,470,0,550);
- water.addColorStop(0,"#70d4e7");
- water.addColorStop(.5,"#258eae");
- water.addColorStop(1,"#66c6df");
-
- ctx.fillStyle=water;
- ctx.fillRect(0,470,W,80);
-
- ctx.fillStyle="#c5ae7d";
- ctx.fillRect(0,465,W,6);
- ctx.fillRect(0,550,W,6);
-
- for(let i=0;i<35;i++){
-   const x=(i*79)%600;
-   const y=478+(i*17)%62;
-
-   ctx.strokeStyle="rgba(225,250,255,.45)";
-   ctx.lineWidth=2;
-   ctx.beginPath();
-   ctx.moveTo(x,y);
-   ctx.lineTo(x+20,y);
-   ctx.stroke();
- }
-
- function bridge(x){
-   ctx.fillStyle="#76502f";
-   ctx.fillRect(x-3,458,76,102);
-
-   ctx.fillStyle="#b77c43";
-   ctx.fillRect(x,458,70,100);
-
-   for(let i=0;i<7;i++){
-     ctx.fillStyle=i%2?"#c99458":"#a9713d";
-     ctx.fillRect(x,460+i*14,70,12);
-   }
-
-   ctx.strokeStyle="#664127";
-   ctx.lineWidth=4;
-   ctx.strokeRect(x,458,70,100);
-
-   ctx.strokeStyle="#754a2a";
-   ctx.lineWidth=5;
-   ctx.beginPath();
-   ctx.moveTo(x,458);
-   ctx.lineTo(x,450);
-   ctx.lineTo(x+70,450);
-   ctx.lineTo(x+70,458);
-   ctx.stroke();
-
-   ctx.beginPath();
-   ctx.moveTo(x,558);
-   ctx.lineTo(x,566);
-   ctx.lineTo(x+70,566);
-   ctx.lineTo(x+70,558);
-   ctx.stroke();
- }
-
- bridge(205);
- bridge(325);
-
- tower(300,90,"🔴","ENEMY KING");
-
- const redLeft = towers.find(t => t.team === "red" && t.lane === 240);
- const redRight = towers.find(t => t.team === "red" && t.lane === 360);
-
- if(redLeft && redLeft.hp > 0) tower(240,240,"🔴","TOWER");
- if(redRight && redRight.hp > 0) tower(360,240,"🔴","TOWER");
-
- const blueLeft = towers.find(t => t.team === "blue" && t.lane === 240);
- const blueRight = towers.find(t => t.team === "blue" && t.lane === 360);
-
- if(blueLeft && blueLeft.hp > 0) tower(240,760,"🔵","TOWER");
- if(blueRight && blueRight.hp > 0) tower(360,760,"🔵","TOWER");
-
- tower(300,910,"🔵","YOUR KING");
+  units.push({
+    id:++unitId,
+    team,
+    type,
+    lane,
+    x:lane + (Math.random()*18-9),
+    y:blue ? 535 : 365,
+    hp:data.hp,
+    maxHP:data.hp,
+    damage:data.damage,
+    range:data.range,
+    speed:data.speed,
+    rate:data.rate,
+    cool:Math.random()*.25,
+    radius:type==="giant"?23: type==="knight"?18:15,
+    color:data.color
+  });
 }
 
-function tower(x,y,team,label){
-  const blue=team==="🔵";
+canvas.addEventListener("pointerdown",event=>{
+  if(ended || paused) return;
 
-  ctx.fillStyle="rgba(0,0,0,.2)";
-  ctx.beginPath();
-  ctx.ellipse(x,y+37,53,13,0,0,Math.PI*2);
-  ctx.fill();
+  const rect = canvas.getBoundingClientRect();
+  const scale = Math.min(rect.width/W,rect.height/H);
+  const drawW = W*scale;
+  const drawH = H*scale;
+  const offsetX = (rect.width-drawW)/2;
+  const offsetY = (rect.height-drawH)/2;
 
-  const stone=ctx.createLinearGradient(x-40,y,x+40,y);
-  stone.addColorStop(0,"#a99572");
-  stone.addColorStop(.5,"#ead6a8");
-  stone.addColorStop(1,"#b29a71");
-  ctx.fillStyle=stone;
-  ctx.fillRect(x-42,y-30,84,68);
+  const x = (event.clientX-rect.left-offsetX)/scale;
+  const y = (event.clientY-rect.top-offsetY)/scale;
 
-  ctx.strokeStyle="rgba(90,70,45,.35)";
-  ctx.lineWidth=2;
-  ctx.strokeRect(x-42,y-30,84,68);
-  ctx.beginPath();
-  ctx.moveTo(x-42,y);
-  ctx.lineTo(x+42,y);
-  ctx.moveTo(x,y);
-  ctx.lineTo(x,y+38);
-  ctx.stroke();
+  if(x<0 || x>W || y<0 || y>H) return;
 
-  ctx.fillStyle=blue?"#287fd5":"#ce4545";
-  ctx.fillRect(x-42,y-37,84,22);
-  for(let i=0;i<4;i++){
-    ctx.fillRect(x-38+i*25,y-43,15,9);
+  if(y<500){
+    $("message").textContent = "Deploy troops on your side, below the river!";
+    return;
   }
 
-  ctx.fillStyle="#68472e";
+  const cost = cards[selected].cost;
+  if(energy<cost){
+    $("message").textContent = "Not enough energy!";
+    return;
+  }
+
+  const lane = x<W/2 ? 205 : 395;
+  energy -= cost;
+  spawn("blue",selected,lane);
+  $("message").textContent = cards[selected].name+" deployed!";
+  updateUI();
+  updateCardButtons();
+});
+
+// =====================================
+// 5. BATTLEFIELD DRAWING
+// =====================================
+function roundedRect(x,y,w,h,r,fill,stroke){
   ctx.beginPath();
-  ctx.moveTo(x-10,y+38);
-  ctx.lineTo(x-10,y+23);
-  ctx.quadraticCurveTo(x-10,y+14,x,y+14);
-  ctx.quadraticCurveTo(x+10,y+14,x+10,y+23);
-  ctx.lineTo(x+10,y+38);
+  ctx.roundRect(x,y,w,h,r);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke();}
+}
+
+function drawTree(x,y,size=1){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(size,size);
+  ctx.fillStyle="#65452f";
+  ctx.fillRect(-7,0,14,34);
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.arc(0,-8-i*17,24-i*3,0,Math.PI*2);
+    ctx.fillStyle=["#17613e","#1d7547","#258552"][i];
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawCastle(x,y,team,king=false){
+  const blue = team==="blue";
+  const main = blue?"#2877c9":"#bd4549";
+  const light = blue?"#72b9f3":"#f18b7d";
+  const dark = blue?"#16477f":"#742c38";
+  const width = king?112:76;
+  const height = king?82:66;
+
+  ctx.save();
+  ctx.translate(x,y);
+
+  // Shadow
+  ctx.fillStyle="#10251c88";
+  ctx.beginPath();
+  ctx.ellipse(0,height*.42,width*.75,13,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Main walls
+  roundedRect(-width/2,-height/2,width,height,9,main,dark);
+
+  // Stone rows
+  ctx.strokeStyle="#ffffff24";
+  ctx.lineWidth=2;
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(-width/2+5,-height/2+14+i*15);
+    ctx.lineTo(width/2-5,-height/2+14+i*15);
+    ctx.stroke();
+  }
+
+  // Side towers
+  for(const side of [-1,1]){
+    roundedRect(side*(width/2-10)-10,-height/2-13,22,34,4,light,dark);
+    ctx.fillStyle=light;
+    ctx.fillRect(side*(width/2-10)-10,-height/2-19,22,9);
+  }
+
+  // Central roof
+  ctx.fillStyle=dark;
+  ctx.beginPath();
+  ctx.moveTo(-18,-height/2+3);
+  ctx.lineTo(0,-height/2-23);
+  ctx.lineTo(18,-height/2+3);
   ctx.closePath();
   ctx.fill();
- 
-  ctx.fillStyle=blue?"#237bd6":"#c83c42";
-  ctx.fillRect(x-5,y-12,10,14);
 
-  ctx.fillStyle="#fff";
-  ctx.font="bold 11px Arial";
-  ctx.textAlign="center";
-  ctx.fillText(label,x,y+9);
-
-  ctx.fillStyle="#584a39";
-  ctx.fillRect(x-27,y-9,9,13);
-  ctx.fillRect(x+18,y-9,9,13);
-}
-
-function drawCharacter(type, x, y, blue) {
- ctx.save();
- ctx.translate(x, y);
-
- const team = blue ? "#258cff" : "#ed4148";
- const dark = blue ? "#123d78" : "#81242b";
-
- ctx.fillStyle = "rgba(0,0,0,0.28)";
- ctx.beginPath();
- ctx.ellipse(0, 13, 19, 7, 0, 0, Math.PI * 2);
- ctx.fill();
-
- if (type === "giant") {
-   ctx.fillStyle = "#77716d";
-   ctx.beginPath();
-   ctx.ellipse(0, -3, 19, 23, 0, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = "#a69b91";
-   ctx.beginPath();
-   ctx.arc(0, -19, 12, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = "#292b32";
-   ctx.fillRect(-8, -22, 5, 4);
-   ctx.fillRect(3, -22, 5, 4);
-
-   ctx.fillStyle = "#57eaff";
-   ctx.fillRect(-7, -9, 14, 5);
-
-   ctx.fillStyle = "#d2c2ad";
-   ctx.fillRect(-17, -9, 8, 18);
-   ctx.fillRect(9, -9, 8, 18);
-
- } else if (type === "wizard") {
-   ctx.fillStyle = dark;
-   ctx.beginPath();
-   ctx.moveTo(-15, 12);
-   ctx.lineTo(-10, -10);
-   ctx.lineTo(10, -10);
-   ctx.lineTo(15, 12);
-   ctx.closePath();
-   ctx.fill();
-
-   ctx.fillStyle = "#efb98e";
-   ctx.beginPath();
-   ctx.arc(0, -13, 9, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = team;
-   ctx.beginPath();
-   ctx.moveTo(-12, -10);
-   ctx.lineTo(0, -34);
-   ctx.lineTo(12, -10);
-   ctx.closePath();
-   ctx.fill();
-
-   ctx.fillStyle = "#ff9d20";
-   ctx.beginPath();
-   ctx.arc(20, -15, 7, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = "#fff27a";
-   ctx.beginPath();
-   ctx.arc(20, -15, 3, 0, Math.PI * 2);
-   ctx.fill();
-
- } else if (type === "archer") {
-   ctx.fillStyle = "#278d55";
-   ctx.fillRect(-10, -9, 20, 22);
-
-   ctx.fillStyle = "#f0bd91";
-   ctx.beginPath();
-   ctx.arc(0, -17, 9, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = "#d94b9b";
-   ctx.beginPath();
-   ctx.arc(-2, -22, 10, Math.PI, Math.PI * 2);
-   ctx.fill();
-
-   ctx.strokeStyle = "#d9a15c";
-   ctx.lineWidth = 3;
-   ctx.beginPath();
-   ctx.arc(17, -7, 13, -1.3, 1.3);
-   ctx.stroke();
-
-   ctx.strokeStyle = "#fff0c2";
-   ctx.lineWidth = 1;
-   ctx.beginPath();
-   ctx.moveTo(17, -20);
-   ctx.lineTo(17, 6);
-   ctx.stroke();
-
- } else {
-   ctx.fillStyle = dark;
-   ctx.fillRect(-12, -8, 24, 22);
-
-   ctx.fillStyle = "#b9c9db";
-   ctx.beginPath();
-   ctx.arc(0, -17, 11, 0, Math.PI * 2);
-   ctx.fill();
-
-   ctx.fillStyle = team;
-   ctx.fillRect(-11, -23, 22, 8);
-
-   ctx.fillStyle = "#26384c";
-   ctx.fillRect(-7, -18, 14, 4);
-
-   ctx.strokeStyle = "#f4e8c9";
-   ctx.lineWidth = 4;
-   ctx.beginPath();
-   ctx.moveTo(12, -8);
-   ctx.lineTo(25, -29);
-   ctx.stroke();
-
-   ctx.strokeStyle = "#d9a64d";
-   ctx.lineWidth = 3;
-   ctx.beginPath();
-   ctx.moveTo(8, -9);
-   ctx.lineTo(17, -3);
-   ctx.stroke();
- }
-
- ctx.restore();
-}
-
-function drawTowerHealthBars(){
- towers.forEach(t=>{
-  if(t.hp<=0)return;
-  const ratio=Math.max(0,t.hp/t.maxHP);
-  ctx.fillStyle="#382c28";
-  ctx.fillRect(t.x-32,t.y-58,64,9);
-  ctx.fillStyle=ratio>.5?"#45e76a":ratio>.25?"#ffd34d":"#ff4545";
-  ctx.fillRect(t.x-30,t.y-56,60*ratio,5);
-  ctx.strokeStyle="#fff";
-  ctx.lineWidth=1;
-  ctx.strokeRect(t.x-32,t.y-58,64,9);
- });
-}
-
-function drawCombatEffects(){
- projectiles.forEach(p=>{
-  const color=p.team==="blue"?"#48caff":"#ff5757";
-  ctx.strokeStyle=color;
-  ctx.globalAlpha=0.45;
-  ctx.lineWidth=5;
+  // Door
+  ctx.fillStyle="#392a2a";
   ctx.beginPath();
-  ctx.moveTo(p.x,p.y);
-  ctx.lineTo(p.x-(p.target.x-p.x)*0.08, p.y-(p.target.y-p.y)*0.08);
-  ctx.stroke();
-
-  ctx.globalAlpha=1;
-  ctx.fillStyle=color;
-  ctx.shadowColor=color;
-  ctx.shadowBlur=15;
-  ctx.beginPath();
-  ctx.arc(p.x,p.y,7,0,Math.PI*2);
+  ctx.roundRect(-12,height/2-29,24,30,[12,12,2,2]);
   ctx.fill();
-  ctx.shadowBlur=0;
- });
 
- impacts.forEach(i=>{
-  const size=12+(1-i.life/0.25)*18;
-  ctx.globalAlpha=i.life/0.25;
-  ctx.strokeStyle="#fff4a3";
-  ctx.lineWidth=4;
+  // Flag
+  ctx.strokeStyle="#e6e8ed";
+  ctx.lineWidth=3;
   ctx.beginPath();
-  ctx.arc(i.x,i.y,size,0,Math.PI*2);
+  ctx.moveTo(0,-height/2-22);
+  ctx.lineTo(0,-height/2-48);
   ctx.stroke();
-  ctx.globalAlpha=1;
- });
-}
- 
-function drawUnits(){
- units.forEach(u=>{
-   const blue=u.team==="blue";
-   ctx.fillStyle="rgba(0,0,0,.25)";
-   ctx.beginPath();
-   ctx.ellipse(u.x,u.y+14,25,9,0,0,Math.PI*2);
-   ctx.fill();
+  ctx.fillStyle=blue?"#8de5ff":"#ffcf70";
+  ctx.beginPath();
+  ctx.moveTo(1,-height/2-47);
+  ctx.lineTo(25,-height/2-40);
+  ctx.lineTo(1,-height/2-32);
+  ctx.closePath();
+  ctx.fill();
 
-   ctx.beginPath();
-   ctx.ellipse(u.x,u.y,23,18,0,0,Math.PI*2);
-   ctx.fillStyle=blue?"#267bd9":"#d94242";
-   ctx.fill();
-   ctx.strokeStyle=blue?"#b8e4ff":"#ffc2a9";
-   ctx.lineWidth=3;
-   ctx.stroke();
-
-   drawCharacter(u.type,u.x,u.y,blue);
-
-   ctx.fillStyle="#382c28";
-   ctx.fillRect(u.x-23,u.y-29,46,7);
-
-   const health=Math.max(0,u.hp/u.maxHP);
-   ctx.fillStyle=health>.5?"#51e76d":health>.25?"#ffd34d":"#ff514b";
-   ctx.fillRect(u.x-22,u.y-28,44*health,5);
-
-   ctx.strokeStyle="#fff";
-   ctx.lineWidth=1;
-   ctx.strokeRect(u.x-23,u.y-29,46,7);
- });
+  ctx.restore();
 }
 
-function update(dt){
- if(ended)return;
- energy=Math.min(10,energy+dt*0.45);
+function drawArena(){
+  // Grass background
+  const grass = ctx.createLinearGradient(0,0,0,H);
+  grass.addColorStop(0,"#286b48");
+  grass.addColorStop(.5,"#348553");
+  grass.addColorStop(1,"#286b48");
+  ctx.fillStyle=grass;
+  ctx.fillRect(0,0,W,H);
 
- enemyTimer-=dt;
- if(enemyTimer<=0){
-  const types=Object.keys(cards);
-  const type=types[Math.floor(Math.random()*types.length)];
-  const lane=Math.random()<0.5?240:360;
-  spawn("red",type,lane);
-  enemyTimer=4+Math.random()*3;
- }
-
- units.forEach(u=>{
-  u.cool-=dt;
-  let target=null;
-  let best=Infinity;
-
-  units.forEach(v=>{
-   if(v.team!==u.team&&v.hp>0){
-    const d=Math.hypot(v.x-u.x,v.y-u.y);
-    if(d<u.range+15&&d<best){
-     best=d;
-     target=v;
+  // Grass texture
+  for(let y=12;y<H;y+=35){
+    for(let x=12;x<W;x+=37){
+      ctx.fillStyle=(Math.sin(x*4+y*7)>0)?"#ffffff09":"#092b1c0c";
+      ctx.fillRect(x,y,12,3);
     }
-   }
+  }
+
+  // Arena edges
+  ctx.fillStyle="#1d5439";
+  ctx.fillRect(0,0,32,H);
+  ctx.fillRect(W-32,0,32,H);
+
+  // Decorative trees
+  drawTree(75,115,.9);
+  drawTree(520,130,1);
+  drawTree(75,760,1);
+  drawTree(520,770,.9);
+  drawTree(45,420,.65);
+  drawTree(555,475,.65);
+
+  // River
+  const water=ctx.createLinearGradient(0,420,0,490);
+  water.addColorStop(0,"#238bb0");
+  water.addColorStop(.5,"#55c5df");
+  water.addColorStop(1,"#16769e");
+  ctx.fillStyle=water;
+  ctx.fillRect(32,420,536,70);
+
+  // River highlights
+  ctx.strokeStyle="#d2faff55";
+  ctx.lineWidth=3;
+  for(let i=0;i<5;i++){
+    ctx.beginPath();
+    ctx.moveTo(45+i*110,438+(i%2)*22);
+    ctx.quadraticCurveTo(75+i*110,428+(i%2)*22,105+i*110,438+(i%2)*22);
+    ctx.stroke();
+  }
+
+  // Banks
+  ctx.fillStyle="#b8a16a";
+  ctx.fillRect(32,416,536,5);
+  ctx.fillRect(32,489,536,5);
+
+  // Bridges
+  [205,395].forEach(x=>{
+    roundedRect(x-34,411,68,88,5,"#a77b4d","#65472e");
+    ctx.strokeStyle="#e0b67a";
+    ctx.lineWidth=4;
+    for(let i=0;i<5;i++){
+      ctx.beginPath();
+      ctx.moveTo(x-29,422+i*15);
+      ctx.lineTo(x+29,422+i*15);
+      ctx.stroke();
+    }
   });
 
-  if(target){
-   if(u.cool<=0){
-    target.hp-=u.damage;
-    u.cool=u.rate;
-   }
-   return;
+  // Lane markings
+  ctx.setLineDash([8,13]);
+  ctx.strokeStyle="#ffffff18";
+  ctx.lineWidth=2;
+  [205,395].forEach(x=>{
+    ctx.beginPath();ctx.moveTo(x,300);ctx.lineTo(x,600);ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // King castles
+  drawCastle(300,88,"red",true);
+  drawCastle(300,812,"blue",true);
+
+  // Side towers disappear when destroyed
+  towers.forEach(t=>{
+    if(t.hp>0) drawCastle(t.x,t.y,t.team,false);
+  });
+
+  // Lane labels
+  ctx.font="bold 13px Arial";
+  ctx.textAlign="center";
+  ctx.fillStyle="#ffffff77";
+  ctx.fillText("LEFT LANE",205,525);
+  ctx.fillText("RIGHT LANE",395,525);
+}
+
+// =====================================
+// 6. HEALTH BARS
+// =====================================
+function healthBar(x,y,width,hp,maxHP,color){
+  const ratio=Math.max(0,hp/maxHP);
+  roundedRect(x-width/2,y,width,8,4,"#17202c");
+  if(ratio>0){
+    roundedRect(x-width/2,y,width*ratio,8,4,color);
+  }
+}
+
+function drawHealthBars(){
+  towers.forEach(t=>{
+    if(t.hp>0) healthBar(t.x,t.y-53,62,t.hp,t.maxHP,"#70e98d");
+  });
+
+  healthBar(300,25,100,enemyHP,1200,"#ff6262");
+  healthBar(300,855,100,playerHP,1200,"#5dc8ff");
+}
+
+// =====================================
+// 7. TROOP ART
+// =====================================
+function drawUnit(u){
+  const blue=u.team==="blue";
+  const teamColor=blue?"#4db9ff":"#fa6565";
+  const dark=blue?"#17558a":"#8b3039";
+
+  ctx.save();
+  ctx.translate(u.x,u.y);
+
+  // Ground shadow
+  ctx.fillStyle="#09231966";
+  ctx.beginPath();
+  ctx.ellipse(0,12,u.radius*1.25,7,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle=u.color;
+  ctx.beginPath();
+  ctx.arc(0,0,u.radius,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle=dark;
+  ctx.lineWidth=4;
+  ctx.stroke();
+
+  // Team badge
+  ctx.fillStyle=teamColor;
+  ctx.beginPath();
+  ctx.arc(0,-u.radius-5,6,0,Math.PI*2);
+  ctx.fill();
+
+  // Different character details
+  if(u.type==="knight"){
+    ctx.fillStyle="#dce8f2";
+    ctx.fillRect(-u.radius*.7,-4,u.radius*1.4,7);
+    ctx.strokeStyle="#ffffff";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(10,-4);ctx.lineTo(19,-20);ctx.stroke();
+  }
+  else if(u.type==="archer"){
+    ctx.strokeStyle="#553b24";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(5,-2,13,-1.2,1.2);
+    ctx.stroke();
+    ctx.fillStyle="#ffe29b";
+    ctx.beginPath();ctx.arc(-5,-5,4,0,Math.PI*2);ctx.fill();
+  }
+  else if(u.type==="giant"){
+    ctx.fillStyle="#f0c18c";
+    ctx.beginPath();ctx.arc(0,-7,9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#593c2d";
+    ctx.fillRect(-11,5,22,7);
+  }
+  else if(u.type==="wizard"){
+    ctx.fillStyle="#513d8d";
+    ctx.beginPath();
+    ctx.moveTo(-15,-5);ctx.lineTo(0,-28);ctx.lineTo(15,-5);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="#fff0a0";
+    ctx.beginPath();ctx.arc(0,1,5,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.restore();
+
+  healthBar(u.x,u.y-u.radius-19,34,u.hp,u.maxHP,
+    blue?"#56e4ff":"#ff7676");
+}
+
+// =====================================
+// 8. TARGETING AND PROJECTILES
+// =====================================
+function distance(a,b){
+  return Math.hypot(a.x-b.x,a.y-b.y);
+}
+
+function getTarget(u){
+  const enemies=units.filter(other=>
+    other.team!==u.team &&
+    other.lane===u.lane &&
+    other.hp>0 &&
+    Math.abs(other.y-u.y)<155
+  );
+
+  if(enemies.length){
+    enemies.sort((a,b)=>distance(u,a)-distance(u,b));
+    return enemies[0];
   }
 
   const enemyTeam=u.team==="blue"?"red":"blue";
-  const targetTower=towers.find(t=>t.team===enemyTeam&&t.lane===u.lane&&t.hp>0);
+  const side=towers.find(t=>
+    t.team===enemyTeam &&
+    t.lane===u.lane &&
+    t.hp>0
+  );
 
-  if(targetTower){
-   const d=Math.hypot(targetTower.x-u.x,targetTower.y-u.y);
-   if(d<65){
-    if(u.cool<=0){
-     targetTower.hp-=u.damage;
-     u.cool=u.rate;
+  if(side) return side;
+
+  return {kind:"king",team:enemyTeam,x:300,y:enemyTeam==="red"?88:812};
+}
+
+function fireProjectile(from,target,team,damage,type){
+  projectiles.push({
+    x:from.x,
+    y:from.y,
+    target,
+    team,
+    damage,
+    type,
+    speed:type==="arrow"?380:300,
+    life:2
+  });
+}
+
+function updateProjectiles(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p=projectiles[i];
+    p.life-=dt;
+
+    if(p.life<=0 || !p.target || p.target.hp<=0){
+      projectiles.splice(i,1);
+      continue;
     }
-   }else{
-    u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
-   }
-  }else{
-   const castleY=u.team==="blue"?90:910;
-   const dist=Math.abs(u.y-castleY);
-   if(dist<75){
-    if(u.cool<=0){
-     if(u.team==="blue")enemyHP-=u.damage;
-     else playerHP-=u.damage;
-     u.cool=u.rate;
+
+    const dx=p.target.x-p.x;
+    const dy=p.target.y-p.y;
+    const d=Math.hypot(dx,dy);
+    const step=p.speed*dt;
+
+    if(d<step+12){
+      p.target.hp-=p.damage;
+      createBurst(p.x,p.y,p.team==="blue"?"#64dcff":"#ff7777",7);
+      projectiles.splice(i,1);
+    }else{
+      p.x+=(dx/d)*step;
+      p.y+=(dy/d)*step;
     }
-   }else{
-    u.y+=(u.team==="blue"?-1:1)*u.speed*dt;
-   }
   }
- });
+}
 
- units=units.filter(u=>u.hp>0);
+function drawProjectiles(){
+  projectiles.forEach(p=>{
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.fillStyle=p.team==="blue"?"#9beeff":"#ffaaaa";
+    ctx.shadowBlur=14;
+    ctx.shadowColor=ctx.fillStyle;
 
- towers.forEach(t=>{
-  if(t.hp<=0)return;
-  t.cool-=dt;
-  let target=null;
-  let best=175;
-
-  units.forEach(u=>{
-   if(u.team!==t.team&&u.hp>0){
-    const d=Math.hypot(u.x-t.x,u.y-t.y);
-    if(d<best){
-     best=d;
-     target=u;
+    if(p.type==="arrow"){
+      ctx.rotate(Math.atan2(
+        p.target.y-p.y,p.target.x-p.x
+      ));
+      ctx.fillRect(-10,-2,20,4);
+    }else{
+      ctx.beginPath();
+      ctx.arc(0,0,p.type==="magic"?7:5,0,Math.PI*2);
+      ctx.fill();
     }
-   }
+    ctx.restore();
+  });
+}
+
+// =====================================
+// 9. TOWER DEFENSE
+// =====================================
+function updateTowers(dt){
+  towers.forEach(t=>{
+    if(t.hp<=0) return;
+    t.cool-=dt;
+
+    if(t.cool>0) return;
+
+    const targets=units.filter(u=>
+      u.team!==t.team &&
+      u.hp>0 &&
+      Math.abs(u.x-t.x)<100 &&
+      Math.abs(u.y-t.y)<235
+    );
+
+    if(!targets.length) return;
+
+    targets.sort((a,b)=>distance(t,a)-distance(t,b));
+    fireProjectile(t,targets[0],t.team,31,"tower");
+    t.cool=1.05;
+  });
+}
+
+// =====================================
+// 10. AI OPPONENT
+// =====================================
+function updateAI(dt){
+  enemyEnergy=Math.min(10,enemyEnergy+dt*.52);
+  enemyTimer-=dt;
+
+  if(enemyTimer>0) return;
+
+  const affordable=Object.keys(cards).filter(type=>
+    cards[type].cost<=enemyEnergy
+  );
+
+  if(affordable.length){
+    // AI sometimes chooses a stronger card
+    let type=affordable[Math.floor(Math.random()*affordable.length)];
+    if(enemyEnergy>=5 && Math.random()<.35) type="giant";
+
+    enemyEnergy-=cards[type].cost;
+    const lane=Math.random()<.5?205:395;
+    spawn("red",type,lane);
+  }
+
+  enemyTimer=2.8+Math.random()*2.5;
+}
+
+// =====================================
+// 11. UNIT MOVEMENT AND COMBAT
+// =====================================
+function updateUnits(dt){
+  units.forEach(u=>{
+    if(u.hp<=0) return;
+
+    u.cool-=dt;
+    const target=getTarget(u);
+    const d=distance(u,target);
+
+    if(d<=u.range+u.radius+12){
+      if(u.cool<=0){
+        const shotType =
+          u.type==="archer"?"arrow":
+          u.type==="wizard"?"magic":"hit";
+
+        fireProjectile(u,target,u.team,u.damage,shotType);
+        u.cool=u.rate;
+      }
+    }else{
+      const direction=u.team==="blue"?-1:1;
+      u.y+=direction*u.speed*dt;
+    }
   });
 
-  if(target&&t.cool<=0){
-   projectiles.push({x:t.x,y:t.y-20,target:target,team:t.team,damage:22,speed:280});
-   t.cool=1;
-  }
- });
+  units=units.filter(u=>u.hp>0 && u.y>20 && u.y<880);
+}
 
- projectiles.forEach(p=>{
-  if(p.target.hp<=0){
-   p.remove=true;
-   return;
+// =====================================
+// 12. PARTICLE EFFECTS
+// =====================================
+function createBurst(x,y,color,count){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=25+Math.random()*100;
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:.3+Math.random()*.35,
+      max:.65,
+      color,
+      size:2+Math.random()*4
+    });
   }
-  const dx=p.target.x-p.x;
-  const dy=p.target.y-p.y;
-  const distance=Math.hypot(dx,dy);
-  const movement=p.speed*dt;
+}
 
-  if(distance<=movement+12){
-   p.target.hp-=p.damage;
-   impacts.push({x:p.target.x,y:p.target.y,life:0.25});
-   p.remove=true;
-  }else{
-   p.x+=(dx/distance)*movement;
-   p.y+=(dy/distance)*movement;
+function updateParticles(dt){
+  particles.forEach(p=>{
+    p.x+=p.vx*dt;
+    p.y+=p.vy*dt;
+    p.vy+=90*dt;
+    p.life-=dt;
+  });
+  particles=particles.filter(p=>p.life>0);
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life/p.max);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+}
+
+// =====================================
+// 13. GAME RULES
+// =====================================
+function checkEnd(){
+  if(enemyHP<=0){
+    enemyHP=0;
+    finish("VICTORY!","You destroyed the enemy king!");
+  }else if(playerHP<=0){
+    playerHP=0;
+    finish("DEFEAT","The enemy destroyed your king.");
+  }else if(elapsed>=180){
+    if(playerHP>enemyHP){
+      finish("VICTORY!","Time is up. Your king has more health!");
+    }else if(playerHP<enemyHP){
+      finish("DEFEAT","Time is up. The enemy king has more health.");
+    }else{
+      finish("DRAW","Both kings have equal health.");
+    }
   }
- });
+}
 
- projectiles=projectiles.filter(p=>!p.remove);
- impacts.forEach(i=>i.life-=dt);
- impacts=impacts.filter(i=>i.life>0);
- 
- if(enemyHP<=0||playerHP<=0){
+function finish(title,subtitle){
   ended=true;
-  message.textContent=enemyHP<=0?"🏆 VICTORY! Enemy king defeated!":"💔 DEFEAT! Your king was defeated.";
- }
-
- updateStats();
+  $("message").textContent=title+" — "+subtitle;
+  createBurst(300,450,"#ffe18b",35);
+  updateCardButtons();
 }
 
-function frame(t){
- const dt=Math.min((t-lastTime)/1000||0,0.05);
- lastTime=t;
- clock+=dt;
- update(dt);
- drawArena();
- drawTowerHealthBars();
- drawUnits();
- drawCombatEffects();
- requestAnimationFrame(frame);
+function update(dt){
+  if(ended || paused) return;
+
+  elapsed+=dt;
+  energy=Math.min(10,energy+dt*.55);
+
+  updateAI(dt);
+  updateUnits(dt);
+  updateTowers(dt);
+  updateProjectiles(dt);
+  updateParticles(dt);
+
+  // Damage to king after the matching side tower is gone
+  if(playerHP<=0) playerHP=0;
+  if(enemyHP<=0) enemyHP=0;
+
+  // Projectiles can target the king directly
+  projectiles.forEach(p=>{
+    if(p.target && p.target.kind==="king"){
+      // King targets are handled by the projectile impact below
+    }
+  });
+
+  // Update king health from projectile impacts
+  // (handled in updateProjectiles)
+  checkEnd();
+  updateUI();
+  updateCardButtons();
 }
 
-document.getElementById("restart").onclick=reset;
+// =====================================
+// 14. KING PROJECTILE DAMAGE
+// =====================================
+const originalUpdateProjectiles=updateProjectiles;
+updateProjectiles=function(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p=projectiles[i];
+    p.life-=dt;
 
-window.onload = () => {
- reset();
- requestAnimationFrame(frame);
+    if(p.life<=0 || !p.target || p.target.hp<=0){
+      projectiles.splice(i,1);
+      continue;
+    }
+
+    const dx=p.target.x-p.x;
+    const dy=p.target.y-p.y;
+    const d=Math.hypot(dx,dy);
+    const step=p.speed*dt;
+
+    if(d<step+13){
+      if(p.target.kind==="king"){
+        if(p.target.team==="red") enemyHP-=p.damage;
+        else playerHP-=p.damage;
+      }else{
+        p.target.hp-=p.damage;
+      }
+      createBurst(p.x,p.y,p.team==="blue"?"#64dcff":"#ff7777",7);
+      projectiles.splice(i,1);
+    }else{
+      p.x+=(dx/d)*step;
+      p.y+=(dy/d)*step;
+    }
+  }
 };
+
+// =====================================
+// 15. PAUSE AND RESTART
+// =====================================
+$("pause").addEventListener("click",()=>{
+  if(ended) return;
+  paused=!paused;
+  $("pause").textContent=paused?"▶ RESUME":"⏸ PAUSE";
+  $("message").textContent=paused?"Battle paused.":"Battle resumed!";
+});
+
+$("restart").addEventListener("click",()=>{
+  resetGame();
+});
+
+// =====================================
+// 16. MAIN DRAW LOOP
+// =====================================
+function drawGame(){
+  drawArena();
+  drawHealthBars();
+
+  units.forEach(drawUnit);
+  drawProjectiles();
+  drawParticles();
+
+  if(paused || ended){
+    ctx.fillStyle="#07111dcc";
+    ctx.fillRect(0,0,W,H);
+
+    ctx.textAlign="center";
+    ctx.fillStyle="#ffffff";
+    ctx.font="bold 46px Arial";
+    ctx.fillText(paused?"PAUSED":
+      enemyHP<=0?"VICTORY!":
+      playerHP<=0?"DEFEAT":
+      playerHP===enemyHP?"DRAW":
+      playerHP>enemyHP?"VICTORY!":"DEFEAT",300,405);
+
+    ctx.font="20px Arial";
+    ctx.fillStyle="#d8e6f5";
+    ctx.fillText(paused?"Press RESUME to continue":"Press NEW BATTLE to play again",300,450);
+  }
+}
+
+function frame(timestamp){
+  if(!lastTime) lastTime=timestamp;
+  const dt=Math.min((timestamp-lastTime)/1000,.05);
+  lastTime=timestamp;
+
+  if(!paused && !ended) update(dt);
+  drawGame();
+  requestAnimationFrame(frame);
+}
+
+// =====================================
+// 17. START GAME
+// =====================================
+resetGame();
+requestAnimationFrame(frame);
+
 </script>
 </body>
 </html>
