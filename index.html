@@ -122,11 +122,13 @@ canvas{
   font-weight:bold;
   color:#72eaff;
 }
+
 #cards{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:7px;
 }
+
 .card{
   min-width:0;
   background:linear-gradient(160deg,#30445e,#1b2b41);
@@ -209,29 +211,51 @@ canvas{
     <span id="energy-number">5.0</span>
   </div>
 
-  <div id="cards">
-    <button class="card selected" data-card="knight">
-      <span class="cost">3</span><span class="emoji">⚔️</span>
-      <span class="name">KNIGHT</span>
-    </button>
-    <button class="card" data-card="archer">
-      <span class="cost">3</span><span class="emoji">🏹</span>
-      <span class="name">ARCHER</span>
-    </button>
-    <button class="card" data-card="giant">
-      <span class="cost">5</span><span class="emoji">🗿</span>
-      <span class="name">GIANT</span>
-    </button>
-    <button class="card" data-card="wizard">
-      <span class="cost">4</span><span class="emoji">🧙</span>
-      <span class="name">WIZARD</span>
-    </button>
-  </div>
+<div id="cards">
+  <button class="card selected" data-card="knight">
+    <span class="cost">3</span><span class="emoji">⚔️</span>
+    <span class="name">KNIGHT</span>
+  </button>
 
-  <div id="bottom-row">
-    <button class="action" id="pause">⏸ PAUSE</button>
-    <button class="action" id="restart">↻ NEW BATTLE</button>
-  </div>
+  <button class="card" data-card="archer">
+    <span class="cost">3</span><span class="emoji">🏹</span>
+    <span class="name">ARCHER</span>
+  </button>
+
+  <button class="card" data-card="giant">
+    <span class="cost">5</span><span class="emoji">🗿</span>
+    <span class="name">GIANT</span>
+  </button>
+
+  <button class="card" data-card="wizard">
+    <span class="cost">4</span><span class="emoji">🧙</span>
+    <span class="name">WIZARD</span>
+  </button>
+
+  <button class="card" data-card="spearman">
+    <span class="cost">2</span><span class="emoji">🔱</span>
+    <span class="name">SPEARMAN</span>
+  </button>
+
+  <button class="card" data-card="guardian">
+    <span class="cost">4</span><span class="emoji">🛡️</span>
+    <span class="name">GUARDIAN</span>
+  </button>
+
+  <button class="card" data-card="rogue">
+    <span class="cost">2</span><span class="emoji">🗡️</span>
+    <span class="name">ROGUE</span>
+  </button>
+
+  <button class="card" data-card="fire">
+    <span class="cost">5</span><span class="emoji">🔥</span>
+    <span class="name">FIRE ELEMENTAL</span>
+  </button>
+</div>
+
+<div id="bottom-row">
+  <button class="action" id="pause">⏸ PAUSE</button>
+  <button class="action" id="restart">↻ NEW BATTLE</button>
 </div>
 
 <script>
@@ -248,10 +272,46 @@ const ctx = canvas.getContext("2d");
 const $ = id => document.getElementById(id);
 
 const cards = {
-  knight:{cost:3,hp:190,damage:32,range:38,speed:48,rate:.85,color:"#d9e4f2",name:"Knight"},
-  archer:{cost:3,hp:95,damage:23,range:145,speed:43,rate:1.05,color:"#65d68a",name:"Archer"},
-  giant:{cost:5,hp:520,damage:58,range:43,speed:23,rate:1.35,color:"#d99a62",name:"Giant"},
-  wizard:{cost:4,hp:135,damage:43,range:125,speed:35,rate:1.15,color:"#b18aff",name:"Wizard"}
+  knight:{
+    cost:3,hp:190,damage:32,
+    range:38,speed:48,rate:.85,
+    color:"#d9e4f2",name:"Knight"
+  },
+  archer:{
+    cost:3,hp:95,damage:23,
+    range:145,speed:43,rate:1.05,
+    color:"#65d68a",name:"Archer"
+  },
+  giant:{
+    cost:5,hp:520,damage:58,
+    range:43,speed:23,rate:1.35,
+    color:"#d99a62",name:"Giant"
+  },
+  wizard:{
+    cost:4,hp:135,damage:43,
+    range:125,speed:35,rate:1.15,
+    color:"#b18aff",name:"Wizard"
+  },
+  spearman:{
+    cost:2,hp:115,damage:25,
+    range:85,speed:62,rate:.75,
+    color:"#f2d16b",name:"Spearman"
+  },
+  guardian:{
+    cost:4,hp:380,damage:38,
+    range:40,speed:27,rate:1.2,
+    color:"#77b9dc",name:"Guardian"
+  },
+  rogue:{
+    cost:2,hp:85,damage:22,
+    range:35,speed:85,rate:.48,
+    color:"#d18be8",name:"Rogue"
+  },
+  fire:{
+    cost:5,hp:250,damage:52,
+    range:105,speed:32,rate:1.1,
+    color:"#ff7043",name:"Fire Elemental"
+  }
 };
 
 let units = [];
@@ -926,6 +986,104 @@ function drawUnit(u){
     ctx.shadowBlur=0;
   }
 
+  else if(u.type==="spearman"){
+    // Spearman helmet
+    ctx.fillStyle="#f2d16b";
+    ctx.beginPath();
+    ctx.moveTo(-11,-8);
+    ctx.lineTo(0,-25);
+    ctx.lineTo(11,-8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Long spear
+    ctx.strokeStyle="#9b6337";
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.moveTo(12,14);
+    ctx.lineTo(25,-27);
+    ctx.stroke();
+
+    ctx.fillStyle="#e8e8e8";
+    ctx.beginPath();
+    ctx.moveTo(25,-32);
+    ctx.lineTo(20,-23);
+    ctx.lineTo(29,-23);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  else if(u.type==="guardian"){
+    // Shield
+    ctx.fillStyle="#77b9dc";
+    ctx.beginPath();
+    ctx.moveTo(-20,-12);
+    ctx.lineTo(-5,-18);
+    ctx.lineTo(-5,12);
+    ctx.lineTo(-13,19);
+    ctx.lineTo(-22,12);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle="#e2f5ff";
+    ctx.lineWidth=3;
+    ctx.stroke();
+
+    // Helmet
+    ctx.fillStyle="#dceeff";
+    ctx.beginPath();
+    ctx.arc(4,-7,10,Math.PI,Math.PI*2);
+    ctx.fill();
+  }
+
+  else if(u.type==="rogue"){
+    // Hood
+    ctx.fillStyle="#593b72";
+    ctx.beginPath();
+    ctx.arc(0,-7,15,Math.PI,Math.PI*2);
+    ctx.fill();
+
+    // Daggers
+    ctx.strokeStyle="#e9e9f5";
+    ctx.lineWidth=4;
+
+    ctx.beginPath();
+    ctx.moveTo(-15,-4);
+    ctx.lineTo(-27,-19);
+    ctx.moveTo(15,-4);
+    ctx.lineTo(27,-19);
+    ctx.stroke();
+
+    // Glowing eyes
+    ctx.fillStyle="#ffdcff";
+    ctx.fillRect(-7,-10,4,3);
+    ctx.fillRect(4,-10,4,3);
+  }
+
+  else if(u.type==="fire"){
+    // Fire crown
+    ctx.fillStyle="#ff8a32";
+    ctx.beginPath();
+    ctx.moveTo(-15,-7);
+    ctx.lineTo(-12,-24);
+    ctx.lineTo(-3,-13);
+    ctx.lineTo(5,-30);
+    ctx.lineTo(10,-13);
+    ctx.lineTo(17,-22);
+    ctx.lineTo(16,-5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glowing core
+    ctx.fillStyle="#fff2a1";
+    ctx.shadowColor="#ff6b19";
+    ctx.shadowBlur=18;
+    ctx.beginPath();
+    ctx.arc(0,2,8+Math.sin(animTime*9)*2,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
   ctx.restore();
 
   // Unit health bar
@@ -1136,8 +1294,9 @@ function updateUnits(dt){
     if(d<=u.range+u.radius+12){
       if(u.cool<=0){
         const shotType =
-          u.type==="archer"?"arrow":
-          u.type==="wizard"?"magic":"hit";
+  u.type==="archer" || u.type==="spearman" ? "arrow":
+  u.type==="wizard" || u.type==="fire" ? "magic":
+  "hit";
 
         fireProjectile(u,target,u.team,u.damage,shotType);
         u.cool=u.rate;
