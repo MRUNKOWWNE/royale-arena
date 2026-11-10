@@ -423,7 +423,15 @@ function spawn(team,type,lane){
     speed:data.speed,
     rate:data.rate,
     cool:Math.random()*.25,
-    radius:type==="giant"?23: type==="knight"?18:15,
+    radius:
+  type==="giant"?25:
+  type==="guardian"?21:
+  type==="fire"?19:
+  type==="knight"?18:
+  type==="spearman"?16:
+  type==="rogue"?14:
+  type==="wizard"?16:
+  15,
     color:data.color
   });
 }
@@ -904,7 +912,20 @@ function drawUnit(u){
   ctx.fill();
 
   // Character-specific details
-  if(u.type==="knight"){
+    // Extra visual outline for new troops
+if(
+  u.type==="spearman" ||
+  u.type==="guardian" ||
+  u.type==="rogue" ||
+  u.type==="fire"
+){
+  ctx.strokeStyle="#ffffff";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(0,0,u.radius+3,0,Math.PI*2);
+  ctx.stroke();
+}
+    if(u.type==="knight"){
     // Helmet
     ctx.fillStyle="#e1e8ed";
     ctx.beginPath();
