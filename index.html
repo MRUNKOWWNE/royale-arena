@@ -270,7 +270,8 @@ let elapsed = 0;
 let enemyTimer = 2;
 let lastTime = 0;
 let unitId = 0;
-
+let animTime = 0;
+  
 // =====================================
 // 2. BATTLE RESET
 // =====================================
@@ -410,86 +411,203 @@ function roundedRect(x,y,w,h,r,fill,stroke){
   if(fill){ctx.fillStyle=fill;ctx.fill();}
   if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke();}
 }
-
+  
 function drawTree(x,y,size=1){
   ctx.save();
   ctx.translate(x,y);
   ctx.scale(size,size);
-  ctx.fillStyle="#65452f";
-  ctx.fillRect(-7,0,14,34);
+
+  // Tree shadow
+  ctx.fillStyle="#092d1c66";
+  ctx.beginPath();
+  ctx.ellipse(3,28,29,10,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Trunk
+  const trunk=ctx.createLinearGradient(-8,0,8,0);
+  trunk.addColorStop(0,"#57351f");
+  trunk.addColorStop(.5,"#98613a");
+  trunk.addColorStop(1,"#42291c");
+  ctx.fillStyle=trunk;
+  ctx.fillRect(-7,-4,14,36);
+
+  // Foliage layers
+  const leaves=["#145a36","#207844","#2c9653"];
   for(let i=0;i<3;i++){
     ctx.beginPath();
-    ctx.arc(0,-8-i*17,24-i*3,0,Math.PI*2);
-    ctx.fillStyle=["#17613e","#1d7547","#258552"][i];
+    ctx.arc(0,-10-i*15,27-i*4,0,Math.PI*2);
+    ctx.fillStyle=leaves[i];
     ctx.fill();
+    ctx.strokeStyle="#a5e58a25";
+    ctx.lineWidth=2;
+    ctx.stroke();
   }
+
+  // Light spots
+  ctx.fillStyle="#a9e77b55";
+  ctx.beginPath();
+  ctx.arc(-9,-29,5,0,Math.PI*2);
+  ctx.arc(10,-15,4,0,Math.PI*2);
+  ctx.fill();
+
   ctx.restore();
 }
 
+function drawFlower(x,y,color){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.fillStyle="#327e43";
+  ctx.fillRect(-1,1,2,9);
+
+  for(let i=0;i<5;i++){
+    const a=i*Math.PI*2/5;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a)*4,Math.sin(a)*4,3,0,Math.PI*2);
+    ctx.fillStyle=color;
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(0,0,2.5,0,Math.PI*2);
+  ctx.fillStyle="#ffe18a";
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawRock(x,y,size=1){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(size,size);
+
+  ctx.fillStyle="#182c28";
+  ctx.beginPath();
+  ctx.ellipse(2,7,19,8,0,0,Math.PI*2);
+  ctx.fill();
+
+  const rock=ctx.createLinearGradient(-10,-12,10,12);
+  rock.addColorStop(0,"#a5b0a2");
+  rock.addColorStop(.5,"#697b73");
+  rock.addColorStop(1,"#3e554d");
+
+  ctx.fillStyle=rock;
+  ctx.beginPath();
+  ctx.moveTo(-17,4);
+  ctx.lineTo(-11,-10);
+  ctx.lineTo(0,-17);
+  ctx.lineTo(14,-9);
+  ctx.lineTo(18,5);
+  ctx.lineTo(7,12);
+  ctx.lineTo(-10,10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle="#d9e6d044";
+  ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+
 function drawCastle(x,y,team,king=false){
-  const blue = team==="blue";
-  const main = blue?"#2877c9":"#bd4549";
-  const light = blue?"#72b9f3":"#f18b7d";
-  const dark = blue?"#16477f":"#742c38";
-  const width = king?112:76;
-  const height = king?82:66;
+  const blue=team==="blue";
+  const main=blue?"#2877c9":"#bd4549";
+  const light=blue?"#72b9f3":"#f18b7d";
+  const dark=blue?"#16477f":"#742c38";
+  const width=king?112:76;
+  const height=king?82:66;
 
   ctx.save();
   ctx.translate(x,y);
 
-  // Shadow
-  ctx.fillStyle="#10251c88";
+  // Ground shadow
+  ctx.fillStyle="#071a1780";
   ctx.beginPath();
-  ctx.ellipse(0,height*.42,width*.75,13,0,0,Math.PI*2);
+  ctx.ellipse(3,height*.43,width*.78,14,0,0,Math.PI*2);
   ctx.fill();
 
-  // Main walls
-  roundedRect(-width/2,-height/2,width,height,9,main,dark);
+  // Main castle walls
+  const wall=ctx.createLinearGradient(-width/2,0,width/2,0);
+  wall.addColorStop(0,dark);
+  wall.addColorStop(.5,main);
+  wall.addColorStop(1,dark);
 
-  // Stone rows
-  ctx.strokeStyle="#ffffff24";
+  roundedRect(-width/2,-height/2,width,height,8,wall,"#352d32");
+
+  // Stone blocks
+  ctx.strokeStyle="#ffffff27";
   ctx.lineWidth=2;
-  for(let i=0;i<3;i++){
+
+  for(let row=0;row<3;row++){
     ctx.beginPath();
-    ctx.moveTo(-width/2+5,-height/2+14+i*15);
-    ctx.lineTo(width/2-5,-height/2+14+i*15);
+    ctx.moveTo(-width/2+4,-height/2+14+row*15);
+    ctx.lineTo(width/2-4,-height/2+14+row*15);
     ctx.stroke();
   }
 
   // Side towers
   for(const side of [-1,1]){
-    roundedRect(side*(width/2-10)-10,-height/2-13,22,34,4,light,dark);
+    roundedRect(
+      side*(width/2-10)-11,
+      -height/2-15,
+      22,37,4,light,dark
+    );
+
+    ctx.fillStyle=dark;
+    ctx.fillRect(side*(width/2-10)-12,-height/2-18,24,6);
+
+    // Battlements
     ctx.fillStyle=light;
-    ctx.fillRect(side*(width/2-10)-10,-height/2-19,22,9);
+    for(let i=0;i<3;i++){
+      ctx.fillRect(
+        side*(width/2-10)-11+i*8,
+        -height/2-24,
+        5,7
+      );
+    }
   }
 
   // Central roof
   ctx.fillStyle=dark;
   ctx.beginPath();
-  ctx.moveTo(-18,-height/2+3);
-  ctx.lineTo(0,-height/2-23);
-  ctx.lineTo(18,-height/2+3);
+  ctx.moveTo(-20,-height/2+3);
+  ctx.lineTo(0,-height/2-25);
+  ctx.lineTo(20,-height/2+3);
   ctx.closePath();
   ctx.fill();
 
-  // Door
-  ctx.fillStyle="#392a2a";
+  // Castle door
+  ctx.fillStyle="#342421";
   ctx.beginPath();
-  ctx.roundRect(-12,height/2-29,24,30,[12,12,2,2]);
+  ctx.roundRect(-13,height/2-30,26,31,[13,13,2,2]);
   ctx.fill();
 
-  // Flag
-  ctx.strokeStyle="#e6e8ed";
+  ctx.strokeStyle="#c99b60";
+  ctx.lineWidth=3;
+  ctx.stroke();
+
+  // Glowing windows
+  ctx.fillStyle="#ffe59a";
+  ctx.shadowColor="#ffd56b";
+  ctx.shadowBlur=king?12:6;
+  ctx.fillRect(-width/2+12,-height/2+21,8,11);
+  ctx.fillRect(width/2-20,-height/2+21,8,11);
+  ctx.shadowBlur=0;
+
+  // Flag pole
+  ctx.strokeStyle="#e5e5e5";
   ctx.lineWidth=3;
   ctx.beginPath();
-  ctx.moveTo(0,-height/2-22);
-  ctx.lineTo(0,-height/2-48);
+  ctx.moveTo(0,-height/2-24);
+  ctx.lineTo(0,-height/2-52);
   ctx.stroke();
+
+  // Animated flag
+  const wave=Math.sin(animTime*4+x*.01)*4;
   ctx.fillStyle=blue?"#8de5ff":"#ffcf70";
   ctx.beginPath();
-  ctx.moveTo(1,-height/2-47);
-  ctx.lineTo(25,-height/2-40);
-  ctx.lineTo(1,-height/2-32);
+  ctx.moveTo(1,-height/2-51);
+  ctx.quadraticCurveTo(13,-height/2-56+wave,25,-height/2-46);
+  ctx.lineTo(1,-height/2-34);
   ctx.closePath();
   ctx.fill();
 
@@ -497,95 +615,162 @@ function drawCastle(x,y,team,king=false){
 }
 
 function drawArena(){
-  // Grass background
-  const grass = ctx.createLinearGradient(0,0,0,H);
-  grass.addColorStop(0,"#286b48");
-  grass.addColorStop(.5,"#348553");
-  grass.addColorStop(1,"#286b48");
+  // Rich grass background
+  const grass=ctx.createLinearGradient(0,0,0,H);
+  grass.addColorStop(0,"#205b3c");
+  grass.addColorStop(.45,"#388c53");
+  grass.addColorStop(1,"#205b3c");
   ctx.fillStyle=grass;
   ctx.fillRect(0,0,W,H);
 
-  // Grass texture
-  for(let y=12;y<H;y+=35){
-    for(let x=12;x<W;x+=37){
-      ctx.fillStyle=(Math.sin(x*4+y*7)>0)?"#ffffff09":"#092b1c0c";
-      ctx.fillRect(x,y,12,3);
+  // Subtle grass texture
+  for(let y=12;y<H;y+=30){
+    for(let x=12;x<W;x+=32){
+      const v=Math.sin(x*12.3+y*5.7);
+      ctx.fillStyle=v>0?"#d5ffcc0b":"#092b1c10";
+      ctx.fillRect(x,y,10,3);
     }
   }
 
-  // Arena edges
-  ctx.fillStyle="#1d5439";
+  // Arena borders
+  ctx.fillStyle="#16442f";
   ctx.fillRect(0,0,32,H);
   ctx.fillRect(W-32,0,32,H);
+  ctx.fillStyle="#d5b47b";
+  ctx.fillRect(30,0,3,H);
+  ctx.fillRect(W-33,0,3,H);
 
-  // Decorative trees
+  // Decorations
   drawTree(75,115,.9);
   drawTree(520,130,1);
   drawTree(75,760,1);
   drawTree(520,770,.9);
-  drawTree(45,420,.65);
-  drawTree(555,475,.65);
+  drawTree(48,300,.65);
+  drawTree(552,590,.65);
+
+  drawRock(112,350,.8);
+  drawRock(485,555,.9);
+  drawRock(105,590,.65);
+  drawRock(490,320,.7);
+
+  for(let i=0;i<22;i++){
+    const x=45+(i*83)%510;
+    const y=25+(i*137)%850;
+    if(y<400 || y>500){
+      drawFlower(x,y,
+        ["#f5d96c","#f6a4c8","#ffffff","#a9baff"][i%4]);
+    }
+  }
 
   // River
   const water=ctx.createLinearGradient(0,420,0,490);
-  water.addColorStop(0,"#238bb0");
-  water.addColorStop(.5,"#55c5df");
-  water.addColorStop(1,"#16769e");
+  water.addColorStop(0,"#146b91");
+  water.addColorStop(.45,"#45b9d5");
+  water.addColorStop(1,"#125c83");
   ctx.fillStyle=water;
   ctx.fillRect(32,420,536,70);
 
-  // River highlights
-  ctx.strokeStyle="#d2faff55";
-  ctx.lineWidth=3;
-  for(let i=0;i<5;i++){
+  // Animated river ripples
+  ctx.save();
+  ctx.strokeStyle="#e0fbff55";
+  ctx.lineWidth=2;
+
+  for(let i=0;i<9;i++){
+    const x=((i*83+animTime*24)%570)+25;
+    const y=429+(i%4)*15;
     ctx.beginPath();
-    ctx.moveTo(45+i*110,438+(i%2)*22);
-    ctx.quadraticCurveTo(75+i*110,428+(i%2)*22,105+i*110,438+(i%2)*22);
+    ctx.moveTo(x,y);
+    ctx.quadraticCurveTo(x+12,y-5,x+25,y);
+    ctx.quadraticCurveTo(x+38,y+5,x+50,y);
     ctx.stroke();
   }
+  ctx.restore();
 
-  // Banks
-  ctx.fillStyle="#b8a16a";
+  // River banks
+  ctx.fillStyle="#c1a46d";
   ctx.fillRect(32,416,536,5);
   ctx.fillRect(32,489,536,5);
 
   // Bridges
   [205,395].forEach(x=>{
-    roundedRect(x-34,411,68,88,5,"#a77b4d","#65472e");
-    ctx.strokeStyle="#e0b67a";
-    ctx.lineWidth=4;
-    for(let i=0;i<5;i++){
+    roundedRect(x-35,411,70,88,6,"#805b3a","#4c3827");
+
+    for(let i=0;i<6;i++){
+      ctx.strokeStyle=i%2?"#d3a36b":"#a8794b";
+      ctx.lineWidth=5;
       ctx.beginPath();
-      ctx.moveTo(x-29,422+i*15);
-      ctx.lineTo(x+29,422+i*15);
+      ctx.moveTo(x-30,418+i*14);
+      ctx.lineTo(x+30,418+i*14);
       ctx.stroke();
     }
+
+    ctx.strokeStyle="#e3c18b";
+    ctx.lineWidth=3;
+    ctx.strokeRect(x-34,412,68,86);
   });
 
   // Lane markings
   ctx.setLineDash([8,13]);
   ctx.strokeStyle="#ffffff18";
   ctx.lineWidth=2;
+
   [205,395].forEach(x=>{
-    ctx.beginPath();ctx.moveTo(x,300);ctx.lineTo(x,600);ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x,300);
+    ctx.lineTo(x,600);
+    ctx.stroke();
   });
   ctx.setLineDash([]);
 
-  // King castles
+  // King towers
   drawCastle(300,88,"red",true);
   drawCastle(300,812,"blue",true);
 
-  // Side towers disappear when destroyed
+  // Side towers and destroyed rubble
   towers.forEach(t=>{
-    if(t.hp>0) drawCastle(t.x,t.y,t.team,false);
+    if(t.hp>0){
+      drawCastle(t.x,t.y,t.team,false);
+    }else{
+      drawRubble(t.x,t.y);
+    }
   });
 
   // Lane labels
   ctx.font="bold 13px Arial";
   ctx.textAlign="center";
-  ctx.fillStyle="#ffffff77";
+  ctx.fillStyle="#ffffff88";
   ctx.fillText("LEFT LANE",205,525);
   ctx.fillText("RIGHT LANE",395,525);
+}
+
+function drawRubble(x,y){
+  ctx.save();
+  ctx.translate(x,y);
+
+  ctx.fillStyle="#17291f88";
+  ctx.beginPath();
+  ctx.ellipse(0,17,42,12,0,0,Math.PI*2);
+  ctx.fill();
+
+  const stones=[
+    [-23,5,15,"#765c49"],
+    [-5,0,19,"#a18b72"],
+    [18,7,16,"#695344"],
+    [5,15,13,"#b39a78"],
+    [-30,13,9,"#c2a47b"]
+  ];
+
+  stones.forEach(s=>{
+    ctx.fillStyle=s[3];
+    ctx.beginPath();
+    ctx.arc(s[0],s[1],s[2],0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle="#49392f";
+    ctx.lineWidth=2;
+    ctx.stroke();
+  });
+
+  ctx.restore();
 }
 
 // =====================================
@@ -611,25 +796,43 @@ function drawHealthBars(){
 // =====================================
 // 7. TROOP ART
 // =====================================
+
 function drawUnit(u){
   const blue=u.team==="blue";
   const teamColor=blue?"#4db9ff":"#fa6565";
   const dark=blue?"#17558a":"#8b3039";
 
+  // Walking animation
+  const moving=Math.sin(animTime*10+u.id)*3;
+  const attack=u.cool<.16?Math.sin(animTime*35)*4:0;
+
   ctx.save();
   ctx.translate(u.x,u.y);
 
-  // Ground shadow
+  // Shadow
   ctx.fillStyle="#09231966";
   ctx.beginPath();
-  ctx.ellipse(0,12,u.radius*1.25,7,0,0,Math.PI*2);
+  ctx.ellipse(0,13,u.radius*1.3,7,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Animated feet
+  ctx.fillStyle=dark;
+  ctx.beginPath();
+  ctx.ellipse(-7,10+moving,6,5,0,0,Math.PI*2);
+  ctx.ellipse(7,10-moving,6,5,0,0,Math.PI*2);
   ctx.fill();
 
   // Body
-  ctx.fillStyle=u.color;
+  const body=ctx.createLinearGradient(-u.radius,-u.radius,u.radius,u.radius);
+  body.addColorStop(0,"#ffffff");
+  body.addColorStop(.25,u.color);
+  body.addColorStop(1,dark);
+
+  ctx.fillStyle=body;
   ctx.beginPath();
   ctx.arc(0,0,u.radius,0,Math.PI*2);
   ctx.fill();
+
   ctx.strokeStyle=dark;
   ctx.lineWidth=4;
   ctx.stroke();
@@ -640,44 +843,98 @@ function drawUnit(u){
   ctx.arc(0,-u.radius-5,6,0,Math.PI*2);
   ctx.fill();
 
-  // Different character details
+  // Character-specific details
   if(u.type==="knight"){
-    ctx.fillStyle="#dce8f2";
-    ctx.fillRect(-u.radius*.7,-4,u.radius*1.4,7);
-    ctx.strokeStyle="#ffffff";
-    ctx.lineWidth=3;
+    // Helmet
+    ctx.fillStyle="#e1e8ed";
     ctx.beginPath();
-    ctx.moveTo(10,-4);ctx.lineTo(19,-20);ctx.stroke();
+    ctx.arc(0,-5,10,Math.PI,Math.PI*2);
+    ctx.fill();
+
+    // Sword
+    ctx.save();
+    ctx.translate(10,0);
+    ctx.rotate(-.5+attack*.04);
+    ctx.fillStyle="#e7f4ff";
+    ctx.fillRect(0,-22,4,25);
+    ctx.fillStyle="#a9783d";
+    ctx.fillRect(-3,0,10,4);
+    ctx.restore();
   }
+
   else if(u.type==="archer"){
-    ctx.strokeStyle="#553b24";
+    // Bow
+    ctx.strokeStyle="#674225";
     ctx.lineWidth=3;
     ctx.beginPath();
-    ctx.arc(5,-2,13,-1.2,1.2);
+    ctx.arc(8,0,13,-1.3,1.3);
     ctx.stroke();
-    ctx.fillStyle="#ffe29b";
-    ctx.beginPath();ctx.arc(-5,-5,4,0,Math.PI*2);ctx.fill();
+
+    // Bow string
+    ctx.strokeStyle="#f7e6bb";
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(11,-12);
+    ctx.lineTo(11,12);
+    ctx.stroke();
+
+    // Arrow
+    ctx.strokeStyle="#fff0b3";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(2,-2);
+    ctx.lineTo(21,-2);
+    ctx.stroke();
   }
+
   else if(u.type==="giant"){
+    // Large face
     ctx.fillStyle="#f0c18c";
-    ctx.beginPath();ctx.arc(0,-7,9,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0,-7,10,0,Math.PI*2);
+    ctx.fill();
+
+    // Belt
     ctx.fillStyle="#593c2d";
-    ctx.fillRect(-11,5,22,7);
+    ctx.fillRect(-13,6,26,7);
+
+    // Shoulder pads
+    ctx.fillStyle="#e0a66e";
+    ctx.beginPath();
+    ctx.arc(-17,-5,7,0,Math.PI*2);
+    ctx.arc(17,-5,7,0,Math.PI*2);
+    ctx.fill();
   }
+
   else if(u.type==="wizard"){
+    // Wizard hat
     ctx.fillStyle="#513d8d";
     ctx.beginPath();
-    ctx.moveTo(-15,-5);ctx.lineTo(0,-28);ctx.lineTo(15,-5);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle="#fff0a0";
-    ctx.beginPath();ctx.arc(0,1,5,0,Math.PI*2);ctx.fill();
+    ctx.moveTo(-16,-5);
+    ctx.lineTo(0,-30);
+    ctx.lineTo(16,-5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Magic glow
+    ctx.fillStyle="#f4d8ff";
+    ctx.shadowColor="#b58aff";
+    ctx.shadowBlur=12;
+    ctx.beginPath();
+    ctx.arc(0,3,6+Math.sin(animTime*8)*1.5,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
   }
 
   ctx.restore();
 
-  healthBar(u.x,u.y-u.radius-19,34,u.hp,u.maxHP,
-    blue?"#56e4ff":"#ff7676");
+  // Unit health bar
+  healthBar(
+    u.x,u.y-u.radius-19,34,u.hp,u.maxHP,
+    blue?"#56e4ff":"#ff7676"
+  );
 }
+
 
 // =====================================
 // 8. TARGETING AND PROJECTILES
@@ -750,27 +1007,69 @@ function updateProjectiles(dt){
   }
 }
 
+
 function drawProjectiles(){
   projectiles.forEach(p=>{
     ctx.save();
     ctx.translate(p.x,p.y);
-    ctx.fillStyle=p.team==="blue"?"#9beeff":"#ffaaaa";
-    ctx.shadowBlur=14;
-    ctx.shadowColor=ctx.fillStyle;
+
+    const color=p.team==="blue"?"#7deaff":"#ff8585";
+
+    ctx.shadowColor=color;
+    ctx.shadowBlur=18;
 
     if(p.type==="arrow"){
-      ctx.rotate(Math.atan2(
-        p.target.y-p.y,p.target.x-p.x
-      ));
-      ctx.fillRect(-10,-2,20,4);
-    }else{
+      const angle=Math.atan2(
+        p.target.y-p.y,
+        p.target.x-p.x
+      );
+
+      ctx.rotate(angle);
+
+      // Arrow shaft
+      ctx.fillStyle="#f5e1b1";
+      ctx.fillRect(-13,-2,25,4);
+
+      // Arrow tip
+      ctx.fillStyle="#ffffff";
       ctx.beginPath();
-      ctx.arc(0,0,p.type==="magic"?7:5,0,Math.PI*2);
+      ctx.moveTo(14,0);
+      ctx.lineTo(7,-6);
+      ctx.lineTo(7,6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Arrow feathers
+      ctx.fillStyle=color;
+      ctx.fillRect(-13,-5,5,3);
+      ctx.fillRect(-13,2,5,3);
+    }
+    else if(p.type==="magic"){
+      // Wizard magic orb
+      const pulse=1+Math.sin(animTime*15)*.18;
+
+      ctx.fillStyle="#b98aff";
+      ctx.beginPath();
+      ctx.arc(0,0,8*pulse,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle="#ffffff";
+      ctx.beginPath();
+      ctx.arc(-2,-2,3,0,Math.PI*2);
       ctx.fill();
     }
+    else{
+      // Tower energy shot
+      ctx.fillStyle=color;
+      ctx.beginPath();
+      ctx.arc(0,0,6,0,Math.PI*2);
+      ctx.fill();
+    }
+
     ctx.restore();
   });
 }
+
 
 // =====================================
 // 9. TOWER DEFENSE
@@ -881,16 +1180,27 @@ function updateParticles(dt){
   particles=particles.filter(p=>p.life>0);
 }
 
+
 function drawParticles(){
   particles.forEach(p=>{
-    ctx.globalAlpha=Math.max(0,p.life/p.max);
+    const alpha=Math.max(0,p.life/p.max);
+
+    ctx.save();
+    ctx.globalAlpha=alpha;
     ctx.fillStyle=p.color;
+    ctx.shadowColor=p.color;
+    ctx.shadowBlur=12;
+
     ctx.beginPath();
     ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
     ctx.fill();
+
+    ctx.restore();
   });
+
   ctx.globalAlpha=1;
 }
+
 
 // =====================================
 // 13. GAME RULES
@@ -1002,6 +1312,7 @@ $("restart").addEventListener("click",()=>{
 // =====================================
 // 16. MAIN DRAW LOOP
 // =====================================
+
 function drawGame(){
   drawArena();
   drawHealthBars();
@@ -1011,28 +1322,91 @@ function drawGame(){
   drawParticles();
 
   if(paused || ended){
-    ctx.fillStyle="#07111dcc";
+    // Dark overlay
+    ctx.fillStyle="#07111ddf";
     ctx.fillRect(0,0,W,H);
 
-    ctx.textAlign="center";
-    ctx.fillStyle="#ffffff";
-    ctx.font="bold 46px Arial";
-    ctx.fillText(paused?"PAUSED":
-      enemyHP<=0?"VICTORY!":
-      playerHP<=0?"DEFEAT":
-      playerHP===enemyHP?"DRAW":
-      playerHP>enemyHP?"VICTORY!":"DEFEAT",300,405);
+    // Decorative frame
+    ctx.strokeStyle="#e6bd67";
+    ctx.lineWidth=4;
+    ctx.strokeRect(48,300,504,270);
 
+    ctx.strokeStyle="#fff2bd77";
+    ctx.lineWidth=1;
+    ctx.strokeRect(58,310,484,250);
+
+    // Determine result
+    let title="PAUSED";
+    let subtitle="Press RESUME to continue";
+    let titleColor="#ffffff";
+
+    if(ended){
+      if(enemyHP<=0 || playerHP>enemyHP){
+        title="VICTORY!";
+        subtitle="The arena belongs to you!";
+        titleColor="#ffdb72";
+      }else if(playerHP<=0 || playerHP<enemyHP){
+        title="DEFEAT";
+        subtitle="The enemy won this battle.";
+        titleColor="#ff8585";
+      }else{
+        title="DRAW";
+        subtitle="Both kings fought bravely.";
+        titleColor="#9bdfff";
+      }
+    }
+
+    // Animated stars
+    for(let i=0;i<12;i++){
+      const x=90+(i*37)%420;
+      const y=330+Math.sin(animTime*3+i)*9;
+
+      ctx.fillStyle=i%2?"#ffdf83":"#ffffff";
+      ctx.globalAlpha=.45+Math.sin(animTime*4+i)*.25;
+      ctx.font="20px Arial";
+      ctx.textAlign="center";
+      ctx.fillText("✦",x,y);
+    }
+    ctx.globalAlpha=1;
+
+    // Main title
+    ctx.textAlign="center";
+    ctx.shadowColor=titleColor;
+    ctx.shadowBlur=20;
+    ctx.fillStyle=titleColor;
+    ctx.font="bold 53px Arial";
+    ctx.fillText(title,300,425);
+    ctx.shadowBlur=0;
+
+    // Subtitle
+    ctx.fillStyle="#e0e9f5";
     ctx.font="20px Arial";
-    ctx.fillStyle="#d8e6f5";
-    ctx.fillText(paused?"Press RESUME to continue":"Press NEW BATTLE to play again",300,450);
+    ctx.fillText(subtitle,300,465);
+
+    // Final king health
+    ctx.fillStyle="#ffffff";
+    ctx.font="bold 17px Arial";
+    ctx.fillText(
+      "YOUR KING: "+Math.ceil(playerHP)+
+      "     ENEMY KING: "+Math.ceil(enemyHP),
+      300,515
+    );
+
+    ctx.fillStyle="#b9c8d9";
+    ctx.font="14px Arial";
+    ctx.fillText(
+      paused?"Tap RESUME to return to battle":"Tap NEW BATTLE to play again",
+      300,545
+    );
   }
 }
+
 
 function frame(timestamp){
   if(!lastTime) lastTime=timestamp;
   const dt=Math.min((timestamp-lastTime)/1000,.05);
-  lastTime=timestamp;
+lastTime=timestamp;
+animTime += dt;
 
   if(!paused && !ended) update(dt);
   drawGame();
