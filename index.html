@@ -8,646 +8,217 @@
 <title>ROYALE ARENA</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
-button{cursor:pointer;color:white;font-weight:bold;border:0;border-radius:12px;padding:12px;background:#315071}
-button:disabled{opacity:.4}
-#app{max-width:700px;margin:auto;min-height:100dvh;padding:12px;display:flex;flex-direction:column;gap:12px}
-header{display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:24px;font-weight:900;color:#ffd66b;letter-spacing:1px}
-.profile{background:#1d2b40;padding:9px 12px;border-radius:12px;font-size:13px}
-.panel{background:#1d2b40;border:1px solid #405775;border-radius:15px;padding:14px}
-h2{font-size:20px;margin:5px 0 14px;color:#ffd66b}
-h3{margin:5px 0 10px}
-.small{font-size:12px;color:#aebed1}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.big{font-size:22px;font-weight:bold}
-.primary{background:linear-gradient(120deg,#e7a83c,#b65a2d);font-size:18px;padding:16px}
-.secondary{background:#304966}
-.menu{display:flex;gap:8px}
-.menu button{flex:1;padding:10px 3px;font-size:12px}
-.screen{display:none;flex-direction:column;gap:12px}
-.screen.active{display:flex}
-.arena-card{border:2px solid #526783;border-radius:14px;padding:14px;background:linear-gradient(140deg,#244d48,#172c40)}
-.arena-card.locked{opacity:.45}
-.arena-card button{width:100%;margin-top:10px}
-#game-wrap{height:min(55vh,570px);min-height:280px;background:#15243a;border:2px solid #526783;border-radius:14px;overflow:hidden}
-canvas{width:100%;height:100%;display:block;touch-action:none}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.stat{background:#26364d;padding:9px 3px;text-align:center;border-radius:10px;font-size:12px}
-.stat strong{display:block;font-size:18px;margin-top:4px}
-#battle-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.card{min-width:0;padding:6px 2px;background:#263c56;border:2px solid #526783;position:relative;min-height:82px}
-.card.selected{border-color:#ffd45c;box-shadow:0 0 10px #ffd45c}
-.card .emoji{display:block;font-size:27px;margin-bottom:4px}
-.card .cost{position:absolute;top:3px;right:4px;background:#138bbd;padding:3px 6px;border-radius:20px;font-size:11px}
-.card .name{font-size:10px;display:block}
-#energy-track{height:13px;background:#0d1727;border-radius:20px;overflow:hidden;flex:1}
-#energy-fill{height:100%;background:linear-gradient(90deg,#12b9ed,#66e9ff);width:50%}
-#message{text-align:center;min-height:20px;color:#dce8f7;font-size:13px}
-.collection-card{background:#263c56;border-radius:12px;padding:12px;text-align:center}
-.collection-card .emoji{font-size:32px}
-.reward{text-align:center;padding:25px;background:#253c55;border:2px solid #ffd66b;border-radius:18px}
-.reward .trophy{font-size:48px}
-.hidden{display:none!important}
-footer{margin-top:auto;text-align:center;color:#72849b;font-size:11px;padding:8px}
-@media(max-height:650px){
-#app{gap:7px;padding:7px}
-#game-wrap{height:38vh;min-height:230px}
-.panel{padding:10px}
-.card{min-height:65px}
-}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;overflow:hidden;touch-action:manipulation}
+header{height:48px;background:#172b43;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-weight:bold}
+header span{color:#ffd65b}
+#game{height:calc(100dvh - 48px);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 10px 12px;gap:7px}
+#status{display:flex;justify-content:space-between;width:100%;font-weight:bold;font-size:13px}
+#arena{width:min(100%,420px);flex:1;min-height:0;position:relative;border:4px solid #704a27;border-radius:12px;overflow:hidden;background:#69a94c;box-shadow:0 5px 20px #0009}
+canvas{width:100%;height:100%;display:block}
+#hud{width:min(100%,420px);display:flex;flex-direction:column;gap:7px}
+#energybox{height:17px;background:#39265b;border:2px solid #a78bfa;border-radius:10px;overflow:hidden;position:relative}
+#energy{height:100%;width:50%;background:linear-gradient(90deg,#9b55ef,#d69bff)}
+#energylabel{position:absolute;inset:0;text-align:center;font-size:11px;font-weight:bold;text-shadow:1px 1px #000}
+#cards{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.card{height:85px;border:3px solid #b8a0e6;border-radius:9px;background:linear-gradient(#514477,#29233f);color:white;position:relative;font-weight:bold;box-shadow:0 3px 5px #0008}
+.card.selected{border-color:#ffe36b;transform:translateY(-5px);background:linear-gradient(#8065a9,#40325d)}
+.card .cost{position:absolute;top:3px;left:5px;background:#8a51d8;border-radius:50%;padding:4px 7px}
+.card .emoji{display:block;font-size:31px;margin-top:10px}
+.card .name{display:block;font-size:10px}
+#message{text-align:center;font-size:12px;color:#f9dc8a;height:14px}
+button{cursor:pointer}
+@media(max-height:650px){.card{height:65px}.card .emoji{font-size:24px;margin-top:6px}#game{padding:5px;gap:4px}}
 </style>
 </head>
 <body>
-<div id="app">
-
 <header>
- <div class="logo">⚔ ROYALE ARENA</div>
- <div class="profile">
-  ⭐ <span id="top-trophies">0</span>
-  &nbsp; 🪙 <span id="top-coins">0</span>
- </div>
+ <span>⚔ ROYALE ARENA</span>
+ <span>🏆 <b id="trophies">0</b></span>
 </header>
-
-<!-- DASHBOARD -->
-<section id="home" class="screen active">
- <div class="panel">
-  <div class="row">
-   <div>
-    <div class="small">PLAYER PROFILE</div>
-    <h2>ARENA WARRIOR</h2>
-    <div>LEVEL <strong id="level">1</strong></div>
-   </div>
-   <div style="font-size:48px">🛡️</div>
+<div id="game">
+ <div id="status"><span>🔵 YOUR KING</span><span id="timer">03:00</span><span>🔴 ENEMY KING</span></div>
+ <div id="arena"><canvas id="battle" width="600" height="900"></canvas></div>
+ <div id="hud">
+  <div id="energybox"><div id="energy"></div><div id="energylabel">5 / 10 ENERGY</div></div>
+  <div id="cards">
+   <button class="card selected" data-card="knight"><span class="cost">3</span><span class="emoji">⚔️</span><span class="name">KNIGHT</span></button>
+   <button class="card" data-card="archer"><span class="cost">3</span><span class="emoji">🏹</span><span class="name">ARCHER</span></button>
+   <button class="card" data-card="giant"><span class="cost">5</span><span class="emoji">🗿</span><span class="name">GIANT</span></button>
+   <button class="card" data-card="wizard"><span class="cost">4</span><span class="emoji">🧙</span><span class="name">WIZARD</span></button>
   </div>
-  <div class="row">
-   <span>⭐ Trophies</span><strong id="trophies">0</strong>
-  </div>
-  <div class="row">
-   <span>🪙 Coins</span><strong id="coins">0</strong>
-  </div>
-  <div class="row">
-   <span>🏆 Highest arena</span><strong id="highest">1</strong>
-  </div>
+  <div id="message">Select a card, then tap your side of the arena!</div>
  </div>
-
- <div class="arena-card">
-  <div class="small">YOUR NEXT CHALLENGE</div>
-  <h2>⚔ BATTLE ARENA</h2>
-  <p>Deploy your troops, defend your towers and defeat the enemy king!</p>
-  <button class="primary" onclick="showScreen('map')">BATTLE NOW ⚔</button>
- </div>
-
- <div class="grid">
-  <button class="secondary" onclick="showScreen('collection')">🃏 CARD COLLECTION</button>
-  <button class="secondary" onclick="claimDaily()">🎁 DAILY REWARD</button>
- </div>
- <div class="panel">
-  <h3>📜 YOUR PROGRESS</h3>
-  <div class="row"><span>Wins</span><strong id="wins">0</strong></div>
-  <div class="row"><span>Losses</span><strong id="losses">0</strong></div>
-  <div class="row"><span>Cards collected</span><strong>8 / 8</strong></div>
- </div>
-</section>
-
-<!-- MAP -->
-<section id="map" class="screen">
- <div class="row">
-  <h2>🗺️ BATTLE MAP</h2>
-  <button onclick="showScreen('home')">← HOME</button>
- </div>
- <div class="arena-card">
-  <div class="small">YOUR CURRENT LOCATION</div>
-  <h2>🏰 THE KINGDOM ROAD</h2>
-  <p>Win battles to earn trophies and unlock new arenas.</p>
- </div>
- <div id="arena-list"></div>
-</section>
-
-<!-- COLLECTION -->
-<section id="collection" class="screen">
- <div class="row">
-  <h2>🃏 CARD COLLECTION</h2>
-  <button onclick="showScreen('home')">← BACK</button>
- </div>
- <div class="panel">
-  <p>Build your strategy using eight unique troops.</p>
-  <div class="grid" id="collection-list"></div>
- </div>
-</section>
-
-<!-- BATTLE -->
-<section id="battle" class="screen">
- <div class="row">
-  <button onclick="leaveBattle()">← EXIT</button>
-  <div class="big" id="timer">03:00</div>
-  <button onclick="togglePause()" id="pause">⏸ PAUSE</button>
- </div>
- <div class="stats">
-  <div class="stat">🔵 YOUR KING<strong id="player-hp">1200</strong></div>
-  <div class="stat">⚡ ENERGY<strong id="energy-top">5.0</strong></div>
-  <div class="stat">🔴 ENEMY KING<strong id="enemy-hp">1200</strong></div>
- </div>
- <div id="game-wrap">
-  <canvas id="game" width="600" height="900"></canvas>
- </div>
- <div id="message">Choose a card and deploy below the river.</div>
- <div class="row panel">
-  <b>ENERGY</b>
-  <div id="energy-track"><div id="energy-fill"></div></div>
-  <strong id="energy-number">5.0</strong>
- </div>
- <div id="battle-cards"></div>
- <div class="row panel">
-  <span>▦ DRAW DECK</span><strong id="deck-count">4</strong>
- </div>
-</section>
-
-<!-- RESULT -->
-<section id="result" class="screen">
- <div class="reward">
-  <div class="trophy" id="result-icon">🏆</div>
-  <h2 id="result-title">VICTORY!</h2>
-  <p id="result-description">You won the battle!</p>
-  <div class="grid">
-   <div class="panel">⭐ TROPHIES<br><strong id="reward-trophies">+25</strong></div>
-   <div class="panel">🪙 COINS<br><strong id="reward-coins">+100</strong></div>
-  </div>
-  <button class="primary" onclick="showScreen('map')">CONTINUE</button>
-  <button class="secondary" onclick="startBattle()" style="width:100%;margin-top:8px">BATTLE AGAIN</button>
- </div>
-</section>
-
-<footer>ROYALE ARENA • Original strategy game</footer>
 </div>
-
 <script>
-"use strict";
-
-const $=id=>document.getElementById(id);
+const canvas=document.getElementById("battle");
+const ctx=canvas.getContext("2d");
 const W=600,H=900;
-const canvas=$("game"),ctx=canvas.getContext("2d");
-
-const cards={
- knight:{name:"Knight",emoji:"⚔️",cost:3,hp:190,damage:32,range:38,speed:48,rate:.85,color:"#d9e4f2"},
- archer:{name:"Archer",emoji:"🏹",cost:3,hp:95,damage:23,range:145,speed:43,rate:1.05,color:"#65d68a"},
- giant:{name:"Giant",emoji:"💪",cost:5,hp:520,damage:58,range:43,speed:23,rate:1.35,color:"#d99a62"},
- wizard:{name:"Wizard",emoji:"🧙",cost:4,hp:135,damage:43,range:125,speed:35,rate:1.15,color:"#b18aff"},
- spearman:{name:"Spearman",emoji:"🔱",cost:2,hp:115,damage:25,range:85,speed:62,rate:.75,color:"#f2d16b"},
- guardian:{name:"Guardian",emoji:"🛡️",cost:4,hp:380,damage:38,range:40,speed:27,rate:1.2,color:"#77b9dc"},
- rogue:{name:"Rogue",emoji:"🗡️",cost:2,hp:85,damage:22,range:35,speed:85,rate:.48,color:"#d18be8"},
- fire:{name:"Fire Elemental",emoji:"🔥",cost:5,hp:250,damage:52,range:105,speed:32,rate:1.1,color:"#ff7043"}
-};
-
-const arenas=[
- {name:"Green Kingdom",need:0,emoji:"🌳"},
- {name:"Desert Fortress",need:100,emoji:"🏜️"},
- {name:"Frozen Valley",need:250,emoji:"❄️"},
- {name:"Dragon Mountain",need:500,emoji:"🐉"},
- {name:"Royal Summit",need:900,emoji:"🏰"}
+let units=[],shots=[],energy=5,selected="knight";
+let enemyEnergy=5,seconds=180,ended=false,last=0,aiTimer=3;
+let towers=[
+ {x:100,y:220,team:"red",lane:0,hp:1000,max:1000,kind:"side"},
+ {x:500,y:220,team:"red",lane:1,hp:1000,max:1000,kind:"side"},
+ {x:300,y:90,team:"red",lane:-1,hp:2000,max:2000,kind:"king"},
+ {x:100,y:680,team:"blue",lane:0,hp:1000,max:1000,kind:"side"},
+ {x:500,y:680,team:"blue",lane:1,hp:1000,max:1000,kind:"side"},
+ {x:300,y:810,team:"blue",lane:-1,hp:2000,max:2000,kind:"king"}
 ];
-
-let save=JSON.parse(localStorage.getItem("royaleSave")||"null")||{
- trophies:0,coins:0,wins:0,losses:0,level:1,lastDaily:""
+const data={
+ knight:{cost:3,hp:180,damage:35,speed:75,range:30,rate:1.1,radius:22,emoji:"⚔️"},
+ archer:{cost:3,hp:100,damage:24,speed:62,range:145,rate:1.2,radius:18,emoji:"🏹"},
+ giant:{cost:5,hp:650,damage:70,speed:32,range:35,rate:1.5,radius:30},
+ wizard:{cost:4,hp:140,damage:55,speed:45,range:125,rate:1.5,radius:21,emoji:"🧙"}
 };
-
-function saveGame(){
- localStorage.setItem("royaleSave",JSON.stringify(save));
- updateProfile();
+function deploy(type,team,x,y){
+ let d=data[type];
+ units.push({type,team,x,y,lane:x<300?0:1,hp:d.hp,max:d.hp,damage:d.damage,speed:d.speed,range:d.range,rate:d.rate,cool:0,radius:d.radius,emoji:d.emoji||"🗿"});
 }
-
-function updateProfile(){
- $("top-trophies").textContent=save.trophies;
- $("top-coins").textContent=save.coins;
- $("trophies").textContent=save.trophies;
- $("coins").textContent=save.coins;
- $("wins").textContent=save.wins;
- $("losses").textContent=save.losses;
- $("level").textContent=save.level;
- $("highest").textContent=1+arenas.filter(a=>save.trophies>=a.need).length-1;
-}
-
-function showScreen(id){
- document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
- $(id).classList.add("active");
- if(id==="map")renderMap();
- if(id==="collection")renderCollection();
-}
-
-function renderMap(){
- $("arena-list").innerHTML="";
- arenas.forEach((a,i)=>{
-  let unlocked=save.trophies>=a.need;
-  let div=document.createElement("div");
-  div.className="arena-card"+(unlocked?"":" locked");
-  div.innerHTML=`
-   <div class="row">
-    <h3>${a.emoji} ARENA ${i+1}</h3>
-    <strong>${unlocked?"UNLOCKED":"🔒 LOCKED"}</strong>
-   </div>
-   <div>${a.name}</div>
-   <div class="small">Required trophies: ${a.need}</div>
-   <button ${unlocked?"":"disabled"}>SELECT ARENA</button>`;
-  div.querySelector("button").onclick=()=>startBattle();
-  $("arena-list").appendChild(div);
- });
-}
-
-function renderCollection(){
- $("collection-list").innerHTML="";
- Object.keys(cards).forEach(k=>{
-  let c=cards[k],div=document.createElement("div");
-  div.className="collection-card";
-  div.innerHTML=`<div class="emoji">${c.emoji}</div>
-  <strong>${c.name}</strong><p>⚡ ${c.cost} energy</p>
-  <div class="small">HP ${c.hp} • Damage ${c.damage}</div>`;
-  $("collection-list").appendChild(div);
- });
-}
-
-function claimDaily(){
- let today=new Date().toDateString();
- if(save.lastDaily===today){
-  alert("Your daily reward has already been claimed. Come back tomorrow!");
-  return;
- }
- save.lastDaily=today;
- save.coins+=100;
- saveGame();
- alert("🎁 Daily reward claimed! +100 coins");
-}
-
-let units=[],towers=[],shots=[],particles=[];
-let hand=[],drawPile=[],selected="";
-let playerHP=1200,enemyHP=1200,energy=5,enemyEnergy=5;
-let elapsed=0,enemyTimer=2,ended=false,paused=false;
-let lastTime=0,unitId=0;
-
-function shuffle(a){
- for(let i=a.length-1;i>0;i--){
-  let j=Math.floor(Math.random()*(i+1));
-  [a[i],a[j]]=[a[j],a[i]];
- }
- return a;
-}
-
-function resetDeck(){
- let deck=shuffle(Object.keys(cards));
- hand=deck.splice(0,4);
- drawPile=deck;
- selected=hand[0];
- renderHand();
-}
-
-function renderHand(){
- $("battle-cards").innerHTML="";
- hand.forEach(type=>{
-  let c=cards[type],b=document.createElement("button");
-  b.className="card"+(type===selected?" selected":"");
-  b.innerHTML=`<span class="cost">${c.cost}</span>
-   <span class="emoji">${c.emoji}</span>
-   <span class="name">${c.name}</span>`;
-  b.onclick=()=>{
-   selected=type;
-   $("message").textContent=c.name+" selected. Tap your side to deploy.";
-   renderHand();
-  };
-  $("battle-cards").appendChild(b);
- });
- $("deck-count").textContent=drawPile.length;
-}
-
-function startBattle(){
- units=[];shots=[];particles=[];
- playerHP=enemyHP=1200;
- energy=enemyEnergy=5;
- elapsed=0;enemyTimer=2;
- ended=paused=false;lastTime=0;unitId=0;
-
- towers=[
-  {team:"red",lane:205,x:205,y:245,hp:760,maxHP:760,cool:.5},
-  {team:"red",lane:395,x:395,y:245,hp:760,maxHP:760,cool:1},
-  {team:"blue",lane:205,x:205,y:655,hp:760,maxHP:760,cool:.5},
-  {team:"blue",lane:395,x:395,y:655,hp:760,maxHP:760,cool:1}
- ];
-
- resetDeck();
- $("pause").textContent="⏸ PAUSE";
- $("message").textContent="Choose a card and tap your side of the battlefield.";
- showScreen("battle");
- updateUI();
-}
-
-function spawn(team,type,lane){
- let c=cards[type],blue=team==="blue";
- units.push({
-  id:++unitId,team,type,lane,
-  x:lane+(Math.random()*12-6),
-  y:blue?535:365,
-  hp:c.hp,maxHP:c.hp,damage:c.damage,
-  range:c.range,speed:c.speed,rate:c.rate,
-  cool:.2,radius:type==="giant"?25:17,color:c.color
- });
-}
-
-canvas.addEventListener("pointerdown",e=>{
- if(ended||paused||!$("battle").classList.contains("active"))return;
- let r=canvas.getBoundingClientRect();
- let scale=Math.min(r.width/W,r.height/H);
- let ox=(r.width-W*scale)/2,oy=(r.height-H*scale)/2;
- let x=(e.clientX-r.left-ox)/scale;
- let y=(e.clientY-r.top-oy)/scale;
- if(x<0||x>W||y<0||y>H)return;
- if(y<500){
-  $("message").textContent="Deploy below the river on your side!";
-  return;
- }
- if(!selected||!hand.includes(selected))return;
- let type=selected,c=cards[type];
- if(energy<c.cost){
-  $("message").textContent="Not enough energy!";
-  return;
- }
- energy-=c.cost;
- spawn("blue",type,x<300?205:395);
- hand=hand.filter(v=>v!==type);
- hand.push(drawPile.shift());
- drawPile.push(type);
- selected=hand[0];
- $("message").textContent=c.name+" deployed! New card drawn.";
- renderHand();
- updateUI();
+document.querySelectorAll(".card").forEach(b=>b.onclick=()=>{
+ selected=b.dataset.card;
+ document.querySelectorAll(".card").forEach(c=>c.classList.toggle("selected",c===b));
 });
-
-function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
-
-function getTarget(u){
- let enemyTeam=u.team==="blue"?"red":"blue";
- let foes=units.filter(v=>
-  v.team===enemyTeam&&v.hp>0&&v.lane===u.lane&&
-  (u.team==="blue"?v.y<u.y+10:v.y>u.y-10)&&
-  Math.abs(v.y-u.y)<190
- );
- if(foes.length){
-  foes.sort((a,b)=>distance(u,a)-distance(u,b));
-  return foes[0];
+canvas.addEventListener("pointerdown",e=>{
+ if(ended)return;
+ let r=canvas.getBoundingClientRect();
+ let x=(e.clientX-r.left)/r.width*W;
+ let y=(e.clientY-r.top)/r.height*H;
+ if(y<450){message("Deploy troops on your side!");return}
+ let d=data[selected];
+ if(energy<d.cost){message("Not enough energy!");return}
+ energy-=d.cost;
+ deploy(selected,"blue",Math.max(65,Math.min(535,x)),Math.max(480,Math.min(850,y)));
+ message(selected.toUpperCase()+" DEPLOYED!");
+});
+function message(s){document.getElementById("message").textContent=s}
+function drawArena(){
+ ctx.fillStyle="#71ad51";ctx.fillRect(0,0,W,H);
+ for(let y=0;y<H;y+=60){
+  ctx.fillStyle=y<450?"#78b858":"#6ca84d";
+  ctx.fillRect(0,y,W,30);
  }
- let side=towers.find(t=>t.team===enemyTeam&&t.lane===u.lane&&t.hp>0);
+ ctx.fillStyle="#3a9cce";ctx.fillRect(0,422,W,56);
+ ctx.fillStyle="#27769d";ctx.fillRect(0,438,W,22);
+ ctx.fillStyle="#b88b53";
+ ctx.fillRect(65,410,75,80);ctx.fillRect(460,410,75,80);
+ ctx.fillStyle="#967044";
+ for(let y=0;y<H;y+=100){ctx.fillRect(0,y,12,4);ctx.fillRect(588,y,12,4)}
+ ctx.strokeStyle="#ffffff55";ctx.lineWidth=3;ctx.setLineDash([12,12]);
+ ctx.beginPath();ctx.moveTo(300,0);ctx.lineTo(300,H);ctx.stroke();ctx.setLineDash([]);
+}
+function drawTower(t){
+ let blue=t.team==="blue";
+ ctx.fillStyle=blue?"#2476dc":"#c83d42";
+ ctx.fillRect(t.x-37,t.y-35,74,70);
+ ctx.fillStyle="#e5d2a2";ctx.fillRect(t.x-29,t.y-46,58,18);
+ ctx.fillStyle="#f7d46d";ctx.fillRect(t.x-12,t.y-57,24,12);
+ ctx.fillStyle="#fff";ctx.font="bold 17px Arial";ctx.textAlign="center";
+ ctx.fillText(t.kind==="king"?"♛":"♜",t.x,t.y+8);
+ ctx.fillStyle="#292929";ctx.fillRect(t.x-35,t.y-53,70,7);
+ ctx.fillStyle="#55e05f";ctx.fillRect(t.x-35,t.y-53,70*Math.max(0,t.hp/t.max),7);
+}
+function drawUnit(u){
+ ctx.fillStyle=u.team==="blue"?"#2476e8":"#dc4242";
+ ctx.beginPath();ctx.arc(u.x,u.y,u.radius,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();
+ ctx.font="25px Arial";ctx.textAlign="center";
+ ctx.fillText(u.emoji,u.x,u.y+9);
+ ctx.fillStyle="#222";ctx.fillRect(u.x-20,u.y-u.radius-9,40,5);
+ ctx.fillStyle="#5bfa63";ctx.fillRect(u.x-20,u.y-u.radius-9,40*Math.max(0,u.hp/u.max),5);
+}
+function targetFor(u){
+ let enemy=u.team==="blue"?"red":"blue";
+ let foes=units.filter(v=>v.team===enemy&&v.hp>0&&Math.abs(v.y-u.y)<180&&Math.abs(v.x-u.x)<170);
+ if(foes.length)return foes.sort((a,b)=>Math.hypot(a.x-u.x,a.y-u.y)-Math.hypot(b.x-u.x,b.y-u.y))[0];
+ let side=towers.find(t=>t.team===enemy&&t.kind==="side"&&t.lane===u.lane&&t.hp>0);
  if(side)return side;
- return {
-  kind:"king",
-  team:enemy,
-  x:300,
-  y:enemy==="red"?88:812
-};
- 
-function shoot(from,target,team,damage,type){
- shots.push({x:from.x,y:from.y,target,team,damage,type,speed:310,life:3});
+ return towers.find(t=>t.team===enemy&&t.kind==="king");
 }
-
-function updateUnits(dt){
- for(let u of units){
-  if(u.hp<=0)continue;
-  u.cool-=dt;
-  let t=getTarget(u);
-  let dx=t.x-u.x,dy=t.y-u.y,d=Math.hypot(dx,dy);
-  let reach=u.range+u.radius+(t.kind==="king"?35:t.kind==="tower"?28:(t.radius||12));
-  if(d<=reach){
-   if(u.cool<=0){
-    shoot(u,t,u.team,u.damage,u.range>50?"magic":"hit");
-    u.cool=u.rate;
-   }
-}else{
-  const step=Math.min(u.speed*dt,d-reach);
-
-  if(d>0){
-    u.x+=(dx/d)*step;
-    u.y+=(dy/d)*step;
+function shoot(u,t){
+ shots.push({x:u.x,y:u.y,target:t,team:u.team,damage:u.damage,speed:300});
+}
+function update(dt){
+ if(ended)return;
+ energy=Math.min(10,energy+0.42*dt);
+ enemyEnergy=Math.min(10,enemyEnergy+0.4*dt);
+ aiTimer-=dt;
+ if(aiTimer<=0){
+  let options=Object.keys(data).filter(k=>data[k].cost<=enemyEnergy);
+  if(options.length){
+   let type=options[Math.floor(Math.random()*options.length)];
+   enemyEnergy-=data[type].cost;
+   deploy(type,"red",Math.random()<.5?160:440,120+Math.random()*120);
   }
-}
-
-function updateTowers(dt){
+  aiTimer=4+Math.random()*3;
+ }
+ units.forEach(u=>{
+  if(u.hp<=0)return;
+  u.cool-=dt;
+  let t=targetFor(u);if(!t)return;
+  let dx=t.x-u.x,dy=t.y-u.y,d=Math.hypot(dx,dy);
+  let reach=u.range+u.radius+(t.radius||35);
+  if(d<=reach){
+   if(u.cool<=0){shoot(u,t);u.cool=u.rate}
+  }else if(d>0){
+   let step=Math.min(u.speed*dt,d-reach);
+   u.x+=dx/d*step;u.y+=dy/d*step;
+  }
+ });
+ units=units.filter(u=>u.hp>0&&u.y>0&&u.y<H);
+ shots.forEach(p=>{
+  if(!p.target||p.target.hp<=0){p.dead=true;return}
+  let dx=p.target.x-p.x,dy=p.target.y-p.y,d=Math.hypot(dx,dy);
+  let step=p.speed*dt;
+  if(d<step+12){p.target.hp-=p.damage;p.dead=true}
+  else{p.x+=dx/d*step;p.y+=dy/d*step}
+ });
+ shots=shots.filter(p=>!p.dead);
  towers.forEach(t=>{
   if(t.hp<=0)return;
-  t.cool-=dt;
-  if(t.cool>0)return;
-  let targets=units.filter(u=>u.team!==t.team&&u.hp>0&&
-   u.lane===t.lane&&Math.abs(u.y-t.y)<250);
-  if(!targets.length)return;
-  targets.sort((a,b)=>distance(t,a)-distance(t,b));
-  shoot(t,targets[0],t.team,31,"tower");
-  t.cool=1.05;
+  let foe=units.filter(u=>u.team!==t.team&&u.hp>0&&Math.hypot(u.x-t.x,u.y-t.y)<175)
+   .sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
+  if(foe){
+   t.cool=(t.cool||0)-dt;
+   if(t.cool<=0){shots.push({x:t.x,y:t.y,target:foe,team:t.team,damage:30,speed:390});t.cool=1}
+  }
+ });
+ let redKing=towers.find(t=>t.team==="red"&&t.kind==="king");
+ let blueKing=towers.find(t=>t.team==="blue"&&t.kind==="king");
+ if(redKing.hp<=0)finish(true);
+ if(blueKing.hp<=0)finish(false);
+}
+function draw(){
+ drawArena();
+ towers.forEach(t=>{if(t.hp>0)drawTower(t)});
+ units.forEach(drawUnit);
+ shots.forEach(p=>{
+  ctx.fillStyle=p.team==="blue"?"#ffe56b":"#ff8d55";
+  ctx.beginPath();ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fill();
  });
 }
-
-function updateAI(dt){
- enemyEnergy=Math.min(10,enemyEnergy+dt*.52);
- enemyTimer-=dt;
- if(enemyTimer>0)return;
- let available=Object.keys(cards).filter(k=>cards[k].cost<=enemyEnergy);
- if(available.length){
-  let type=available[Math.floor(Math.random()*available.length)];
-  enemyEnergy-=cards[type].cost;
-  spawn("red",type,Math.random()<.5?205:395);
- }
- enemyTimer=2.5+Math.random()*2;
-}
-
-function burst(x,y,color){
- for(let i=0;i<5;i++){
-  particles.push({x,y,vx:(Math.random()-.5)*100,
-   vy:(Math.random()-.5)*100,life:.4,color});
- }
-}
-
-function updateShots(dt){
- for(let i=shots.length-1;i>=0;i--){
-  let p=shots[i],t=p.target;
-  p.life-=dt;
-  if(p.life<=0||!t||(t.kind!=="king"&&t.hp<=0)){
-   shots.splice(i,1);continue;
-  }
-  let dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy);
-  let step=p.speed*dt;
-  if(d<=step+12){
-   if(t.kind==="king"){
-    if(t.team==="red")enemyHP-=p.damage;
-    else playerHP-=p.damage;
-   }else t.hp-=p.damage;
-   burst(p.x,p.y,p.team==="blue"?"#67dfff":"#ff7777");
-   shots.splice(i,1);
-  }else if(d){
-   p.x+=dx/d*step;p.y+=dy/d*step;
-  }
- }
-}
-
-function update(dt){
- if(ended||paused)return;
- elapsed+=dt;
- energy=Math.min(10,energy+dt*.55);
- updateAI(dt);
- updateUnits(dt);
- updateTowers(dt);
- updateShots(dt);
- particles.forEach(p=>{
-  p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
- });
- particles=particles.filter(p=>p.life>0);
-
- if(enemyHP<=0){
-  enemyHP=0;finish(true);
- }else if(playerHP<=0){
-  playerHP=0;finish(false);
- }else if(elapsed>=180){
-  finish(playerHP>=enemyHP);
- }
- updateUI();
-}
-
-function updateUI(){
- $("player-hp").textContent=Math.ceil(playerHP);
- $("enemy-hp").textContent=Math.ceil(enemyHP);
- $("energy-top").textContent=energy.toFixed(1);
- $("energy-number").textContent=energy.toFixed(1);
- $("energy-fill").style.width=(energy*10)+"%";
- let time=Math.max(0,180-elapsed);
- $("timer").textContent=String(Math.floor(time/60)).padStart(2,"0")+":"+
- String(Math.floor(time%60)).padStart(2,"0");
-}
-
 function finish(win){
  ended=true;
- let trophy=win?25:-10;
- let coins=win?100:25;
- if(win){
-  save.wins++;save.trophies=Math.max(0,save.trophies+trophy);
-  save.coins+=coins;
-  save.level=1+Math.floor(save.wins/3);
- }else{
-  save.losses++;save.trophies=Math.max(0,save.trophies+trophy);
-  save.coins+=coins;
+ document.getElementById("message").textContent=win?"🏆 VICTORY!":"🛡️ DEFEAT!";
+ setTimeout(()=>{
+  alert(win?"VICTORY! Your kingdom wins!":"DEFEAT! Try another battle.");
+  location.reload();
+ },200);
+}
+function loop(now){
+ let dt=Math.min((now-last)/1000,.05)||0;last=now;
+ if(!ended){
+  update(dt);
+  draw();
+  document.getElementById("energy").style.width=energy*10+"%";
+  document.getElementById("energylabel").textContent=Math.floor(energy)+" / 10 ENERGY";
+  seconds-=dt;
+  if(seconds<=0){seconds=0;finish(false)}
+  document.getElementById("timer").textContent=
+   String(Math.floor(seconds/60)).padStart(2,"0")+":"+
+   String(Math.floor(seconds%60)).padStart(2,"0");
  }
- saveGame();
- $("result-icon").textContent=win?"🏆":"🛡️";
- $("result-title").textContent=win?"VICTORY!":"DEFEAT";
- $("result-description").textContent=win?
-  "Amazing! You defended your kingdom and defeated the enemy.":
-  "The enemy won this battle. Upgrade your strategy and try again.";
- $("reward-trophies").textContent=(trophy>0?"+":"")+trophy;
- $("reward-coins").textContent="+"+coins;
- showScreen("result");
+ requestAnimationFrame(loop);
 }
-
-function togglePause(){
- if(ended)return;
- paused=!paused;
- $("pause").textContent=paused?"▶ RESUME":"⏸ PAUSE";
- $("message").textContent=paused?"Battle paused.":"Battle resumed.";
-}
-
-function leaveBattle(){
- if(!confirm("Leave this battle? Your match progress will be lost."))return;
- ended=true;showScreen("home");
-}
-
-function castle(x,y,team,king=false){
- let blue=team==="blue";
- let main=blue?"#2877c9":"#bd4549";
- let light=blue?"#72b9f3":"#f18b7d";
- let w=king?112:76,h=king?82:66;
- ctx.fillStyle="#071a1780";
- ctx.beginPath();ctx.ellipse(x,y+20,w*.75,12,0,0,6.28);ctx.fill();
- ctx.fillStyle=main;ctx.fillRect(x-w/2,y-h/2,w,h);
- ctx.fillStyle=light;
- ctx.fillRect(x-w/2-8,y-h/2-10,17,30);
- ctx.fillRect(x+w/2-9,y-h/2-10,17,30);
- ctx.fillStyle="#342421";
- ctx.beginPath();ctx.roundRect(x-12,y+h/2-27,24,28,[12,12,2,2]);ctx.fill();
- ctx.fillStyle=light;ctx.fillRect(x-3,y-h/2-22,6,20);
- ctx.fillStyle=blue?"#8de5ff":"#ffcf70";
- ctx.fillRect(x,y-h/2-24,22,9);
-}
-
-function arena(){
- let g=ctx.createLinearGradient(0,0,0,H);
- g.addColorStop(0,"#205b3c");g.addColorStop(.5,"#388c53");g.addColorStop(1,"#205b3c");
- ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
- ctx.fillStyle="#16442f";ctx.fillRect(0,0,32,H);ctx.fillRect(568,0,32,H);
- for(let [x,y] of [[75,115],[520,130],[75,760],[520,770],[48,300],[552,590]]){
-  ctx.fillStyle="#70472c";ctx.fillRect(x-6,y,12,32);
-  ctx.fillStyle="#207844";ctx.beginPath();ctx.arc(x,y-10,25,0,6.28);ctx.fill();
-  ctx.fillStyle="#2c9653";ctx.beginPath();ctx.arc(x-3,y-27,17,0,6.28);ctx.fill();
- }
- let water=ctx.createLinearGradient(0,420,0,490);
- water.addColorStop(0,"#146b91");water.addColorStop(.5,"#45b9d5");water.addColorStop(1,"#125c83");
- ctx.fillStyle=water;ctx.fillRect(32,420,536,70);
- ctx.fillStyle="#c1a46d";ctx.fillRect(32,416,536,5);ctx.fillRect(32,489,536,5);
- [205,395].forEach(x=>{
-  ctx.fillStyle="#805b3a";ctx.fillRect(x-35,411,70,88);
-  for(let i=0;i<6;i++){
-   ctx.strokeStyle="#d3a36b";ctx.lineWidth=5;
-   ctx.beginPath();ctx.moveTo(x-30,418+i*14);ctx.lineTo(x+30,418+i*14);ctx.stroke();
-  }
- });
- castle(300,88,"red",true);
- castle(300,812,"blue",true);
- towers.forEach(t=>{
-  if(t.hp>0)castle(t.x,t.y,t.team);
-  else{ctx.fillStyle="#82705d";ctx.fillRect(t.x-25,t.y,50,15);}
- });
-}
-
-function healthBar(x,y,hp,max,color){
- ctx.fillStyle="#17202c";ctx.fillRect(x-22,y,44,7);
- ctx.fillStyle=color;ctx.fillRect(x-22,y,44*Math.max(0,hp/max),7);
-}
-
-function draw(){
- arena();
- towers.forEach(t=>{
-  if(t.hp>0)healthBar(t.x,t.y-50,t.hp,t.maxHP,"#70e98d");
- });
- units.forEach(u=>{
-  ctx.fillStyle=u.color;
-  ctx.strokeStyle=u.team==="blue"?"#14558a":"#8b3039";
-  ctx.lineWidth=4;
-  ctx.beginPath();ctx.arc(u.x,u.y,u.radius,0,6.28);ctx.fill();ctx.stroke();
-  ctx.font="19px Arial";ctx.textAlign="center";
-  ctx.fillText(cards[u.type].emoji,u.x,u.y+7);
-  healthBar(u.x,u.y-u.radius-12,u.hp,u.maxHP,
-   u.team==="blue"?"#56e4ff":"#ff7676");
- });
- shots.forEach(p=>{
-  ctx.fillStyle=p.team==="blue"?"#7deaff":"#ff8585";
-  ctx.beginPath();ctx.arc(p.x,p.y,7,0,6.28);ctx.fill();
- });
- particles.forEach(p=>{
-  ctx.globalAlpha=Math.max(0,p.life/.4);
-  ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,5,5);
- });
- ctx.globalAlpha=1;
- if(paused){
-  ctx.fillStyle="#07111dcc";ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="#ffdb72";ctx.font="bold 50px Arial";
-  ctx.textAlign="center";ctx.fillText("PAUSED",300,450);
- }
-}
-
-function frame(ts){
- if(!lastTime)lastTime=ts;
- let dt=Math.min((ts-lastTime)/1000,.05);
- lastTime=ts;
- if($("battle").classList.contains("active")){
-  update(dt);draw();
- }
- requestAnimationFrame(frame);
-}
-
-updateProfile();
-renderMap();
-requestAnimationFrame(frame);
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
