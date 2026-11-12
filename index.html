@@ -557,14 +557,16 @@ function updateCardButtons(){
     const inHand = hand.includes(type);
 
     button.style.display = inHand ? "" : "none";
+
     button.classList.toggle("selected",type===selected);
 
-    button.disabled =
-      !inHand || energy < cards[type].cost || ended;
+    // Allow selecting cards even without enough energy
+    button.disabled = !inHand || ended;
   });
 
   $("deck-count").textContent = drawPile.length;
 }
+
   
 // =====================================
 // 4. TROOP DEPLOYMENT
@@ -1384,6 +1386,7 @@ function getTarget(u){
   }
 
   const enemyTeam=u.team==="blue"?"red":"blue";
+
   const side=towers.find(t=>
     t.team===enemyTeam &&
     t.lane===u.lane &&
@@ -1392,7 +1395,12 @@ function getTarget(u){
 
   if(side) return side;
 
-  return {kind:"king",team:enemyTeam,x:300,y:enemyTeam==="red"?88:812};
+  return {
+    kind:"king",
+    team:enemyTeam,
+    x:u.lane,
+    y:enemyTeam==="red"?88:812
+  };
 }
 
 function fireProjectile(from,target,team,damage,type){
@@ -1552,31 +1560,40 @@ function updateAI(dt){
 // =====================================
 // 11. UNIT MOVEMENT AND COMBAT
 // =====================================
+
 function updateUnits(dt){
   units.forEach(u=>{
     if(u.hp<=0) return;
 
     u.cool-=dt;
+
     const target=getTarget(u);
+    if(!target) return;
 
-// Stop movement if no valid target exists
-if(!target) return;
+    const d=distance(u,target);
+    const attackDistance=u.range+u.radius+12;
 
-const d=distance(u,target);
-
-    if(d<=u.range+u.radius+12){
+    if(d<=attackDistance){
       if(u.cool<=0){
         const shotType =
-  u.type==="archer" || u.type==="spearman" ? "arrow":
-  u.type==="wizard" || u.type==="fire" ? "magic":
-  "hit";
+          u.type==="archer" || u.type==="spearman" ? "arrow":
+          u.type==="wizard" || u.type==="fire" ? "magic":
+          "hit";
 
         fireProjectile(u,target,u.team,u.damage,shotType);
         u.cool=u.rate;
       }
     }else{
-      const direction=u.team==="blue"?-1:1;
-      u.y+=direction*u.speed*dt;
+      const direction=target.y<u.y?-1:1;
+
+      const remaining=Math.abs(target.y-u.y)-attackDistance;
+
+      const movement=Math.min(
+        u.speed*dt,
+        Math.max(0,remaining)
+      );
+
+      u.y+=direction*movement;
     }
   });
 
