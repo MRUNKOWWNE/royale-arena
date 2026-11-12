@@ -1558,7 +1558,11 @@ function updateUnits(dt){
 
     u.cool-=dt;
     const target=getTarget(u);
-    const d=distance(u,target);
+
+// Stop movement if no valid target exists
+if(!target) return;
+
+const d=distance(u,target);
 
     if(d<=u.range+u.radius+12){
       if(u.cool<=0){
