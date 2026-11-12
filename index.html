@@ -395,9 +395,13 @@ function getTarget(u){
  }
  let side=towers.find(t=>t.team===enemyTeam&&t.lane===u.lane&&t.hp>0);
  if(side)return side;
- return {kind:"king",team:enemyTeam,x:300,y:enemyTeam==="red"?88:812};
-}
-
+ return {
+  kind:"king",
+  team:enemy,
+  x:300,
+  y:enemy==="red"?88:812
+};
+ 
 function shoot(from,target,team,damage,type){
  shots.push({x:from.x,y:from.y,target,team,damage,type,speed:310,life:3});
 }
@@ -414,12 +418,13 @@ function updateUnits(dt){
     shoot(u,t,u.team,u.damage,u.range>50?"magic":"hit");
     u.cool=u.rate;
    }
-  }else{
-   let dir=dy<0?-1:1;
-   u.y+=dir*Math.min(u.speed*dt,Math.max(0,d-reach));
+}else{
+  const step=Math.min(u.speed*dt,d-reach);
+
+  if(d>0){
+    u.x+=(dx/d)*step;
+    u.y+=(dy/d)*step;
   }
- }
- units=units.filter(u=>u.hp>0&&u.y>10&&u.y<890);
 }
 
 function updateTowers(dt){
