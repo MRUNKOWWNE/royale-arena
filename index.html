@@ -90,21 +90,274 @@ canvas.addEventListener("pointerdown",e=>{
  message(selected.toUpperCase()+" DEPLOYED!");
 });
 function message(s){document.getElementById("message").textContent=s}
-function drawArena(){
- ctx.fillStyle="#71ad51";ctx.fillRect(0,0,W,H);
- for(let y=0;y<H;y+=60){
-  ctx.fillStyle=y<450?"#78b858":"#6ca84d";
-  ctx.fillRect(0,y,W,30);
- }
- ctx.fillStyle="#3a9cce";ctx.fillRect(0,422,W,56);
- ctx.fillStyle="#27769d";ctx.fillRect(0,438,W,22);
- ctx.fillStyle="#b88b53";
- ctx.fillRect(65,410,75,80);ctx.fillRect(460,410,75,80);
- ctx.fillStyle="#967044";
- for(let y=0;y<H;y+=100){ctx.fillRect(0,y,12,4);ctx.fillRect(588,y,12,4)}
- ctx.strokeStyle="#ffffff55";ctx.lineWidth=3;ctx.setLineDash([12,12]);
- ctx.beginPath();ctx.moveTo(300,0);ctx.lineTo(300,H);ctx.stroke();ctx.setLineDash([]);
+
+function roundBox(x,y,w,h,r,color){
+ ctx.fillStyle=color;
+ ctx.beginPath();
+ ctx.roundRect(x,y,w,h,r);
+ ctx.fill();
 }
+
+function drawArena(){
+ // Main grass
+ let grass=ctx.createLinearGradient(0,0,600,900);
+ grass.addColorStop(0,"#83c95b");
+ grass.addColorStop(.5,"#65a747");
+ grass.addColorStop(1,"#4d963d");
+ ctx.fillStyle=grass;
+ ctx.fillRect(0,0,W,H);
+
+ // Grass texture
+ for(let y=20;y<H;y+=42){
+  for(let x=20;x<W;x+=45){
+   ctx.fillStyle=(Math.floor(x/45+y/42)%2===0)?"#ffffff0b":"#173b170b";
+   ctx.fillRect(x,y,22,12);
+  }
+ }
+
+ // Battle lanes
+ roundBox(35,0,230,H,12,"#ffffff0b");
+ roundBox(335,0,230,H,12,"#ffffff0b");
+
+ // Decorative side stones
+ for(let y=30;y<900;y+=90){
+  roundBox(8,y,18,42,5,"#98784a");
+  roundBox(574,y,18,42,5,"#98784a");
+  roundBox(11,y+4,12,33,3,"#c6a36b");
+  roundBox(577,y+4,12,33,3,"#c6a36b");
+ }
+
+ // River banks
+ ctx.fillStyle="#b9d17a";
+ ctx.fillRect(0,405,W,13);
+ ctx.fillRect(0,482,W,13);
+
+ // River
+ let water=ctx.createLinearGradient(0,415,0,480);
+ water.addColorStop(0,"#47b9df");
+ water.addColorStop(.5,"#1686c0");
+ water.addColorStop(1,"#075b94");
+ ctx.fillStyle=water;
+ ctx.fillRect(0,418,W,64);
+
+ // Water highlights
+ ctx.strokeStyle="#b8edff77";
+ ctx.lineWidth=3;
+ for(let x=20;x<600;x+=75){
+  ctx.beginPath();
+  ctx.moveTo(x,432);
+  ctx.lineTo(x+28,432);
+  ctx.moveTo(x+22,465);
+  ctx.lineTo(x+58,465);
+  ctx.stroke();
+ }
+
+ // Bridges
+ [65,460].forEach(x=>{
+  ctx.fillStyle="#00000033";
+  ctx.fillRect(x-5,410,80,83);
+
+  roundBox(x,409,75,83,5,"#644326");
+  roundBox(x+5,411,65,78,3,"#bd8950");
+
+  for(let i=0;i<6;i++){
+   ctx.fillStyle=i%2===0?"#d6a16a":"#b98046";
+   ctx.fillRect(x+7,414+i*12,61,9);
+   ctx.strokeStyle="#80542e";
+   ctx.lineWidth=2;
+   ctx.strokeRect(x+7,414+i*12,61,9);
+  }
+
+  // Bridge railings
+  roundBox(x-4,405,8,84,3,"#754b2b");
+  roundBox(x+71,405,8,84,3,"#754b2b");
+  for(let i=0;i<5;i++){
+   roundBox(x-3,405+i*19,7,8,2,"#e2b477");
+   roundBox(x+71,405+i*19,7,8,2,"#e2b477");
+  }
+ });
+
+ // Arena center decoration
+ ctx.strokeStyle="#ffffff35";
+ ctx.lineWidth=3;
+ ctx.setLineDash([12,14]);
+ ctx.beginPath();
+ ctx.moveTo(300,0);
+ ctx.lineTo(300,900);
+ ctx.stroke();
+ ctx.setLineDash([]);
+
+ // Decorative stones and bushes
+ for(let i=0;i<12;i++){
+  let x=(i*83+31)%580+10;
+  let y=(i*137+55)%880+10;
+
+  if(y>385&&y<505)continue;
+
+  ctx.fillStyle="#00000020";
+  ctx.beginPath();
+  ctx.ellipse(x+3,y+5,13,7,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle=i%2===0?"#347d39":"#478c3c";
+  ctx.beginPath();
+  ctx.arc(x,y,10,0,Math.PI*2);
+  ctx.arc(x+9,y+3,8,0,Math.PI*2);
+  ctx.arc(x-8,y+4,7,0,Math.PI*2);
+  ctx.fill();
+ }
+
+ // Arena border
+ ctx.strokeStyle="#593d25";
+ ctx.lineWidth=12;
+ ctx.strokeRect(5,5,590,890);
+ ctx.strokeStyle="#d1a568";
+ ctx.lineWidth=3;
+ ctx.strokeRect(12,12,576,876);
+}
+
+function drawTower(t){
+ let blue=t.team==="blue";
+ let main=blue?"#347fce":"#c94b4b";
+ let dark=blue?"#164b83":"#852d35";
+ let light=blue?"#8ec9f0":"#f08b72";
+
+ ctx.save();
+
+ // Tower shadow
+ ctx.fillStyle="#00000045";
+ ctx.beginPath();
+ ctx.ellipse(t.x+5,t.y+35,53,27,0,0,Math.PI*2);
+ ctx.fill();
+
+ // Stone foundation
+ roundBox(t.x-47,t.y-35,94,78,9,"#806b51");
+ roundBox(t.x-41,t.y-31,82,68,7,"#c1a477");
+
+ // Main tower body
+ roundBox(t.x-36,t.y-43,72,77,6,dark);
+ roundBox(t.x-31,t.y-40,62,70,5,main);
+
+ // Stone details
+ for(let i=0;i<3;i++){
+  ctx.fillStyle="#ffffff25";
+  ctx.fillRect(t.x-27+i*19,t.y-33,11,5);
+  ctx.fillStyle="#00000022";
+  ctx.fillRect(t.x-27+i*19,t.y+20,11,5);
+ }
+
+ // Tower roof
+ ctx.fillStyle=dark;
+ ctx.beginPath();
+ ctx.moveTo(t.x-45,t.y-40);
+ ctx.lineTo(t.x,t.y-85);
+ ctx.lineTo(t.x+45,t.y-40);
+ ctx.closePath();
+ ctx.fill();
+
+ ctx.fillStyle=main;
+ ctx.beginPath();
+ ctx.moveTo(t.x-36,t.y-42);
+ ctx.lineTo(t.x,t.y-77);
+ ctx.lineTo(t.x+36,t.y-42);
+ ctx.closePath();
+ ctx.fill();
+
+ // Roof highlight
+ ctx.strokeStyle=light;
+ ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.moveTo(t.x-30,t.y-44);
+ ctx.lineTo(t.x,t.y-73);
+ ctx.stroke();
+
+ // Windows
+ roundBox(t.x-9,t.y-19,18,27,8,"#26374b");
+ roundBox(t.x-5,t.y-15,10,19,5,"#f6d58b");
+
+ // Battlements
+ for(let i=-1;i<=1;i++){
+  roundBox(t.x+i*24-8,t.y-48,16,13,3,main);
+ }
+
+ // Flag pole and flag
+ ctx.fillStyle="#e6d2a5";
+ ctx.fillRect(t.x+28,t.y-95,4,34);
+ ctx.fillStyle=blue?"#4fc3ff":"#ff655c";
+ ctx.beginPath();
+ ctx.moveTo(t.x+32,t.y-94);
+ ctx.lineTo(t.x+57,t.y-87);
+ ctx.lineTo(t.x+32,t.y-78);
+ ctx.closePath();
+ ctx.fill();
+
+ // Tower symbol
+ ctx.font="bold 25px Arial";
+ ctx.textAlign="center";
+ ctx.fillStyle="#ffffff";
+ ctx.fillText(t.kind==="king"?"♛":"♜",t.x,t.y+16);
+
+ // Health bar
+ roundBox(t.x-39,t.y-109,78,11,5,"#252525");
+ roundBox(t.x-37,t.y-107,74*Math.max(0,t.hp/t.max),7,3,"#54e35e");
+
+ ctx.restore();
+}
+
+function drawUnit(u){
+ ctx.save();
+
+ // Ground shadow
+ ctx.fillStyle="#00000055";
+ ctx.beginPath();
+ ctx.ellipse(u.x+3,u.y+u.radius*.8,u.radius*1.25,u.radius*.55,0,0,Math.PI*2);
+ ctx.fill();
+
+ // Outer body ring
+ ctx.fillStyle=u.team==="blue"?"#124a9c":"#8d2029";
+ ctx.beginPath();
+ ctx.arc(u.x,u.y,u.radius+4,0,Math.PI*2);
+ ctx.fill();
+
+ // Body gradient
+ let g=ctx.createRadialGradient(
+  u.x-u.radius*.4,u.y-u.radius*.5,2,
+  u.x,u.y,u.radius+3
+ );
+ if(u.team==="blue"){
+  g.addColorStop(0,"#8bd9ff");
+  g.addColorStop(1,"#1760bb");
+ }else{
+  g.addColorStop(0,"#ffb0a0");
+  g.addColorStop(1,"#b72e38");
+ }
+ ctx.fillStyle=g;
+ ctx.beginPath();
+ ctx.arc(u.x,u.y,u.radius,0,Math.PI*2);
+ ctx.fill();
+
+ // Troop outline
+ ctx.strokeStyle="#ffffff";
+ ctx.lineWidth=2;
+ ctx.stroke();
+
+ // Troop symbol
+ ctx.font=(u.radius>25?"32px":"27px")+" Arial";
+ ctx.textAlign="center";
+ ctx.textBaseline="middle";
+ ctx.fillText(u.emoji,u.x,u.y+1);
+
+ // Health bar background
+ roundBox(u.x-23,u.y-u.radius-15,46,7,3,"#222222");
+ roundBox(
+  u.x-22,u.y-u.radius-14,
+  44*Math.max(0,u.hp/u.max),5,2,
+  "#61ed66"
+ );
+
+ ctx.restore();
+}
+
 function drawTower(t){
  let blue=t.team==="blue";
  ctx.fillStyle=blue?"#2476dc":"#c83d42";
