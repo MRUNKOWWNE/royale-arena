@@ -518,9 +518,12 @@ function init(){
   .1,
   100
  );
-
- camera.position.set(0,17,25);
- camera.lookAt(0,0,0);
+ 
+// Wider battlefield camera
+camera.position.set(0,25,35);
+camera.lookAt(0,0,0);
+camera.fov=43;
+camera.updateProjectionMatrix();
 
  renderer=new THREE.WebGLRenderer({
   antialias:true,
