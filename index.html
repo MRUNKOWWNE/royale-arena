@@ -454,18 +454,18 @@ function createArena(){
   box("arena-end-wall",0,.25,z,14,.8,.45,"#80603e");
  }
 
- // River bed
- box("river-bed",0,-.04,0,14,.18,1.8,"#15577c");
+ // River bed — wider channel
+ box("river-bed",0,-.04,0,14,.22,2.5,"#15577c");
 
  // Water surface
  water=new THREE.Mesh(
-  new THREE.PlaneGeometry(13.8,1.65,30,8),
+  new THREE.PlaneGeometry(13.8,2.35,40,12),
   new THREE.MeshStandardMaterial({
-   color:"#27a7db",
-   roughness:.25,
-   metalness:.08,
+   color:"#168fc9",
+   roughness:.2,
+   metalness:.12,
    transparent:true,
-   opacity:.96
+   opacity:.97
   })
  );
  water.rotation.x=-Math.PI/2;
@@ -473,24 +473,53 @@ function createArena(){
  scene.add(water);
 
  // Water ripples
- for(let i=0;i<18;i++){
+ for(let i=0;i<26;i++){
   const line=new THREE.Mesh(
-   new THREE.BoxGeometry(.55,.025,.035),
+   new THREE.BoxGeometry(.7,.025,.045),
    new THREE.MeshBasicMaterial({
-    color:"#a9edff",
+    color:"#b8efff",
     transparent:true,
-    opacity:.45
+    opacity:.5
    })
   );
-  line.position.set(Math.sin(i*7)*6,.15,Math.cos(i*3)*.65);
+
+  line.position.set(
+   Math.sin(i*7)*6,
+   .15,
+   Math.cos(i*3)*.95
+  );
+
   scene.add(line);
   waterLines.push(line);
  }
 
- // River banks
- for(const z of [-.98,.98]){
-  box("river-bank",0,.12,z,14,.3,.2,"#c1a66c");
-  box("river-bank-grass",0,.3,z,14,.08,.22,"#83bd50");
+ // Natural stone riverbanks
+ for(const z of [-1.35,1.35]){
+  // Dark stone foundation
+  box("river-bank",0,.08,z,14,.35,.48,"#77736b");
+
+  // Lighter stone top edge
+  box("river-stone-edge",0,.28,z,14,.18,.32,"#aaa49a");
+
+  // Grass strip
+  box("river-bank-grass",0,.39,z,14,.09,.3,"#83bd50");
+
+  // Individual decorative stones
+  for(let i=0;i<18;i++){
+   const stone= new THREE.Mesh(
+    new THREE.DodecahedronGeometry(.16,0),
+    material(i%2===0?"#918b80":"#b4aa98")
+   );
+
+   stone.position.set(
+    -6.7+i*.78,
+    .39,
+    z+(i%2===0?.12:-.12)
+   );
+
+   stone.scale.set(1.3,.65,.8);
+   scene.add(stone);
+  }
  }
 
  // Two bridges
