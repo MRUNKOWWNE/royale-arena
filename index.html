@@ -45,40 +45,190 @@ header{
 }
 #topinfo{
  position:absolute;
- top:12px;
+ top:10px;
  left:0;
  right:0;
  display:flex;
  justify-content:space-between;
+ align-items:center;
  padding:0 12px;
  pointer-events:none;
  font-weight:bold;
- text-shadow:2px 2px 4px #000;
- font-size:13px;
+ text-shadow:1px 1px 2px #000;
+ z-index:3;
 }
-.pill{
- background:#14251edb;
- border:1px solid #d5b16d;
- border-radius:20px;
- padding:8px 12px;
+.crown-pill{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ padding:6px 14px;
+ border-radius:12px;
+ font-size:16px;
+ border:2px solid #fff;
+ box-shadow:0 3px 6px rgba(0,0,0,0.5);
 }
-#bottom{
+.crown-pill.blue{ background:linear-gradient(#348ceb,#1a5fb4); }
+.crown-pill.red{ background:linear-gradient(#e03c3c,#9e1b1b); }
+.timer-pill{
+ background:#1b262c;
+ color:#ffdf77;
+ border:2px solid #d5b16d;
+ border-radius:12px;
+ padding:6px 16px;
+ font-size:17px;
+ box-shadow:0 3px 6px rgba(0,0,0,0.5);
+}
+#hp-layer{
  position:absolute;
- bottom:15px;
- left:50%;
- transform:translateX(-50%);
- width:min(92%,360px);
- text-align:center;
+ inset:0;
  pointer-events:none;
+ overflow:hidden;
+ z-index:2;
 }
-#message{
- display:inline-block;
- padding:8px 14px;
- border-radius:20px;
- background:#14251edb;
- border:1px solid #d5b16d;
- font-size:12px;
+.hp-bar{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ width:54px;
+ height:13px;
+ background:#1a1a1a;
+ border:1.5px solid #000;
+ border-radius:4px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:10px;
+ font-weight:bold;
+ color:#fff;
+ text-shadow:1px 1px 1px #000;
+ overflow:hidden;
 }
+.hp-bar.king{ width:66px; }
+.hp-fill{
+ position:absolute;
+ left:0;
+ top:0;
+ bottom:0;
+ width:100%;
+ z-index:-1;
+}
+.hp-bar.red .hp-fill{ background:linear-gradient(#ff5252,#c62828); }
+.hp-bar.blue .hp-fill{ background:linear-gradient(#42a5f5,#1565c0); }
+
+#deck-hud{
+ position:absolute;
+ bottom:0;
+ left:0;
+ right:0;
+ background:linear-gradient(#261c33,#16101f);
+ border-top:2px solid #6c4f8c;
+ padding:8px 8px 12px;
+ z-index:4;
+ user-select:none;
+}
+#elixir-wrap{
+ position:relative;
+ height:22px;
+ background:#120c1a;
+ border:2px solid #d8b4f8;
+ border-radius:11px;
+ margin-bottom:10px;
+ overflow:hidden;
+ display:flex;
+}
+#elixir-fill{
+ position:absolute;
+ left:0;
+ top:0;
+ bottom:0;
+ width:50%;
+ background:linear-gradient(90deg,#b833ff,#e066ff);
+ transition:width 0.15s linear;
+}
+.elixir-segments{
+ position:relative;
+ z-index:2;
+ display:flex;
+ width:100%;
+ height:100%;
+}
+.elixir-segments span{
+ flex:1;
+ border-right:1px solid rgba(255,255,255,0.25);
+}
+.elixir-segments span:last-child{ border-right:none; }
+#elixir-badge{
+ position:absolute;
+ left:46%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ z-index:3;
+ font-size:13px;
+ font-weight:bold;
+ text-shadow:1px 1px 2px #000;
+ display:flex;
+ align-items:center;
+ gap:2px;
+}
+#cards-row{
+ display:flex;
+ align-items:flex-end;
+ gap:6px;
+}
+#next-slot{
+ width:46px;
+ text-align:center;
+ font-size:9px;
+ color:#ccc;
+ font-weight:bold;
+}
+#next-slot .card{
+ height:56px;
+ margin-top:2px;
+ opacity:0.85;
+}
+#hand-slots{
+ flex:1;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:6px;
+}
+.card{
+ position:relative;
+ height:76px;
+ background:linear-gradient(#6c4c94,#3d2859);
+ border:2px solid #f2c968;
+ border-radius:8px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:space-between;
+ padding:6px 2px 4px;
+ cursor:pointer;
+ box-shadow:0 3px 5px rgba(0,0,0,0.6);
+}
+.card.selected{
+ transform:translateY(-6px);
+ border-color:#fff;
+ box-shadow:0 0 10px #ffdf77;
+}
+.cost-badge{
+ position:absolute;
+ top:-6px;
+ left:-4px;
+ width:20px;
+ height:20px;
+ border-radius:50%;
+ background:radial-gradient(circle at 30% 30%,#ff80f5,#b81db0);
+ border:1.5px solid #fff;
+ font-size:11px;
+ font-weight:bold;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-shadow:1px 1px 1px #000;
+}
+.card-icon{ font-size:26px; margin-top:4px; }
+.card-name{ font-size:10px; font-weight:bold; color:#fff; text-shadow:1px 1px 1px #000; }
 #loading{
  position:absolute;
  inset:0;
@@ -119,13 +269,38 @@ header{
 <div id="game">
  <div id="world"></div>
 
+ <div id="hp-layer"></div>
+
  <div id="topinfo">
-  <span class="pill">🔵 BLUE KINGDOM</span>
-  <span class="pill">🔴 RED KINGDOM</span>
+  <div class="crown-pill blue">👑 <span id="blue-crowns">0</span></div>
+  <div class="timer-pill" id="timer">2:58</div>
+  <div class="crown-pill red"><span id="red-crowns">0</span> 👑</div>
  </div>
 
- <div id="bottom">
-  <span id="message">WELCOME TO THE 3D ARENA</span>
+ <div id="deck-hud">
+  <div id="elixir-wrap">
+   <div id="elixir-fill"></div>
+   <div class="elixir-segments">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+   </div>
+   <div id="elixir-badge">💧 <span id="elixir-num">5</span></div>
+  </div>
+  <div id="cards-row">
+   <div id="next-slot">
+    NEXT
+    <div class="card" id="next-card">
+     <div class="cost-badge">5</div>
+     <div class="card-icon">💪</div>
+    </div>
+   </div>
+   <div id="hand-slots">
+    <div class="card" data-cost="3"><div class="cost-badge">3</div><div class="card-icon">🏹</div><div class="card-name">Archers</div></div>
+    <div class="card" data-cost="3"><div class="cost-badge">3</div><div class="card-icon">🗡️</div><div class="card-name">Knight</div></div>
+    <div class="card" data-cost="5"><div class="cost-badge">5</div><div class="card-icon">🐴</div><div class="card-name">Prince</div></div>
+    <div class="card" data-cost="2"><div class="cost-badge">2</div><div class="card-icon">👺</div><div class="card-name">Goblins</div></div>
+   </div>
+  </div>
  </div>
 
  <div id="loading">
@@ -151,7 +326,8 @@ const world = document.getElementById("world");
 const loading = document.getElementById("loading");
 
 let scene, camera, renderer;
-let water, waterLines = [], foamStrips = [];
+let water, waterLines = [], foamStrips = [], towerList = [];
+let elixir = 5, matchSeconds = 180;
 let clock = new THREE.Clock();
 
 function material(color, roughness = 0.85) {
@@ -328,9 +504,16 @@ function makeTower(x, z, team, king = false) {
     }
   }
 
+  const maxHp = king ? 2400 : 1400;
+  const hpEl = document.createElement("div");
+  hpEl.className = `hp-bar ${team}${king ? " king" : ""}`;
+  hpEl.innerHTML = `<div class="hp-fill"></div><span>${maxHp}</span>`;
+  document.getElementById("hp-layer").appendChild(hpEl);
+  towerList.push({ group, hpEl, yOffset: h + 1.1 });
+
   return group;
 }
-
+ 
 function makeBridge(x) {
   const group = new THREE.Group();
   group.position.x = x;
@@ -520,7 +703,15 @@ function createArena() {
     scene.add(foam);
     foamStrips.push(foam);
   }
-
+// Floating lily pads in the river
+  [[-2.1, -0.35], [-1.3, 0.3], [1.4, 0.35], [2.2, -0.3]].forEach(([lx, lz]) => {
+    const pad = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.24, 0.24, 0.02, 12),
+      material("#52b830", 0.7)
+    );
+    pad.position.set(lx, 0.08, lz);
+    scene.add(pad);
+  });
   for (const sz of [-0.98, 0.98]) {
     box("river-bank", 0, 0.04, sz, 40, 0.22, 0.36, "#6e4e30");
     box("river-bank-grass", 0, 0.16, sz * 1.06, 40, 0.08, 0.24, "#6ab03b");
@@ -581,9 +772,33 @@ function init() {
     120
   );
 
-  camera.position.set(0, 33, 17.5);
-  camera.lookAt(0, 0, 0.5);
+  camera.position.set(0, 34, 18.5);
+  camera.lookAt(0, 0, 1.8);
 
+  // Card selection & live timer/elixir updates
+  document.querySelectorAll("#hand-slots .card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll("#hand-slots .card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+    });
+  });
+
+  setInterval(() => {
+    if (matchSeconds > 0) {
+      matchSeconds--;
+      const m = Math.floor(matchSeconds / 60);
+      const s = String(matchSeconds % 60).padStart(2, "0");
+      document.getElementById("timer").textContent = `${m}:${s}`;
+    }
+    if (elixir < 10) {
+      elixir = Math.min(10, +(elixir + 0.1).toFixed(1));
+      const whole = Math.floor(elixir);
+      document.getElementById("elixir-num").textContent = whole;
+      document.getElementById("elixir-fill").style.width = `${elixir * 10}%`;
+      document.getElementById("elixir-badge").style.left = `${Math.max(8, Math.min(92, elixir * 10))}%`;
+    }
+  }, 280);
+ 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(world.clientWidth, world.clientHeight);
@@ -646,6 +861,19 @@ if (water) {
   foamStrips.forEach((foam, idx) => {
     const dir = idx === 0 ? -1 : 1;
     foam.position.z = dir * (0.83 + Math.sin(t * 2.5) * 0.025);
+  });
+
+  // Project 3D tower positions to 2D screen coordinates for floating HP bars
+  const v = new THREE.Vector3();
+  const w = world.clientWidth;
+  const h = world.clientHeight;
+  towerList.forEach(t => {
+    v.set(t.group.position.x, t.yOffset, t.group.position.z);
+    v.project(camera);
+    const sx = (v.x * 0.5 + 0.5) * w;
+    const sy = (-v.y * 0.5 + 0.5) * h;
+    t.hpEl.style.left = `${sx}px`;
+    t.hpEl.style.top = `${sy}px`;
   });
 
   renderer.render(scene, camera);
