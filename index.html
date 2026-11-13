@@ -365,7 +365,8 @@ function makeBridge(x) {
 
   function makeKing(parentGroup, isBlue, h) {
   const kingGroup = new THREE.Group();
-  kingGroup.position.set(0, h + 0.22, 0); // Positioned directly on the tower floor deck
+  kingGroup.position.set(0, h + 0.22, 0);
+  kingGroup.scale.setScalar(1.6); // <--- Scales the King up so he's larger and easier to see
   parentGroup.add(kingGroup);
 
   const robeColor = isBlue ? "#1c5ec2" : "#c22b2b";
@@ -409,7 +410,8 @@ function makeBridge(x) {
 
 function makePrincess(parentGroup, isBlue, h) {
   const princessGroup = new THREE.Group();
-  princessGroup.position.set(0, h + 0.22, 0); // Positioned directly on the tower floor deck
+  princessGroup.position.set(0, h + 0.22, 0);
+  princessGroup.scale.setScalar(1.5); // <--- Scales the Princess up
   parentGroup.add(princessGroup);
 
   const dressColor = isBlue ? "#2874c7" : "#c93636";
