@@ -274,7 +274,7 @@ function makeTower(x, z, team, king = false) {
   
   if (king) {
     box("king-throne-base", 0, h + 0.38, 0, 0.62, 0.12, 0.52, "#6e522f", group);
-    box("king-crown-pad", 0, h + 0.45, 0, 0.38, 0.08, 0.38, goldColor, group, 0.2);
+    box("king-crown-pad", 0, h + 0.45, 0, 0.38, 0.08, 0.38, goldColor, group);
     makeKing(group, isBlue, h); // Passes tower height h
   } else {
     box("princess-turret", 0, h + 0.38, 0, 0.45, 0.14, 0.45, "#525459", group);
@@ -628,7 +628,15 @@ function resize() {
 function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
+if (water) {
+  water.material.color.setHSL(
+    0.55,
+    0.75,
+    0.52 + Math.sin(t * 2) * 0.035
+  );
 
+  water.position.y = 0.06 + Math.sin(t * 1.5) * 0.015;
+}
   waterLines.forEach((line, i) => {
     line.position.x += 0.015;
     if (line.position.x > 12) line.position.x = -12;
