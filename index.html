@@ -275,10 +275,10 @@ function makeTower(x, z, team, king = false) {
   if (king) {
     box("king-throne-base", 0, h + 0.38, 0, 0.62, 0.12, 0.52, "#6e522f", group);
     box("king-crown-pad", 0, h + 0.45, 0, 0.38, 0.08, 0.38, goldColor, group, 0.2);
-    makeKing(group, isBlue); // <--- Spawns the King character
+    makeKing(group, isBlue, h); // Passes tower height h
   } else {
     box("princess-turret", 0, h + 0.38, 0, 0.45, 0.14, 0.45, "#525459", group);
-    makePrincess(group, isBlue); // <--- Spawns the Princess character
+    makePrincess(group, isBlue, h); // Passes tower height h
   }
 
   const bannerSide = isBlue ? -1 : 1;
@@ -362,9 +362,10 @@ function makeBridge(x) {
     }
   }
 }
-function makeKing(parentGroup, isBlue) {
+
+  function makeKing(parentGroup, isBlue, h) {
   const kingGroup = new THREE.Group();
-  kingGroup.position.set(0, 0.52, 0);
+  kingGroup.position.set(0, h + 0.22, 0); // Positioned directly on the tower floor deck
   parentGroup.add(kingGroup);
 
   const robeColor = isBlue ? "#1c5ec2" : "#c22b2b";
@@ -406,14 +407,14 @@ function makeKing(parentGroup, isBlue) {
   kingGroup.add(mustache);
 }
 
-function makePrincess(parentGroup, isBlue) {
+function makePrincess(parentGroup, isBlue, h) {
   const princessGroup = new THREE.Group();
-  princessGroup.position.set(0, 0.45, 0);
+  princessGroup.position.set(0, h + 0.22, 0); // Positioned directly on the tower floor deck
   parentGroup.add(princessGroup);
 
   const dressColor = isBlue ? "#2874c7" : "#c93636";
   const skinColor = "#f5d0b1";
-  const hairColor = "#e6a135"; // Classic blonde princess hair
+  const hairColor = "#e6a135";
 
   // Dress
   const dress = new THREE.Mesh(
@@ -433,7 +434,7 @@ function makePrincess(parentGroup, isBlue) {
   head.castShadow = true;
   princessGroup.add(head);
 
-  // Hair bun / crown
+  // Hair bun
   const hair = new THREE.Mesh(
     new THREE.SphereGeometry(0.1, 8, 8),
     material(hairColor, 0.8)
@@ -441,6 +442,7 @@ function makePrincess(parentGroup, isBlue) {
   hair.position.set(0, 0.58, -0.04);
   princessGroup.add(hair);
 }
+
 function createArena() {
   const outerGround = new THREE.Mesh(
     new THREE.PlaneGeometry(80, 100),
