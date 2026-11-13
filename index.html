@@ -144,557 +144,380 @@ header{
   </div>
  </div>
 </div>
+ <script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-<script type="module">
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+const world = document.getElementById("world");
+const loading = document.getElementById("loading");
 
-const world=document.getElementById("world");
-const loading=document.getElementById("loading");
+let scene, camera, renderer;
+let water, waterLines = [];
+let clock = new THREE.Clock();
 
-let scene,camera,renderer;
-let water,waterLines=[];
-let clock=new THREE.Clock();
-
-function material(color,roughness=0.9){
- return new THREE.MeshStandardMaterial({
-  color,
-  roughness
- });
+function material(color, roughness = 0.85) {
+  return new THREE.MeshStandardMaterial({ color, roughness });
 }
 
-function box(name,x,y,z,w,h,d,color,group=scene){
- const mesh=new THREE.Mesh(
-  new THREE.BoxGeometry(w,h,d),
-  material(color)
- );
- mesh.name=name;
- mesh.position.set(x,y,z);
- mesh.castShadow=true;
- mesh.receiveShadow=true;
- group.add(mesh);
- return mesh;
-}
-
-function cylinder(x,y,z,r1,r2,h,color,segments=8){
- const mesh=new THREE.Mesh(
-  new THREE.CylinderGeometry(r1,r2,h,segments),
-  material(color)
- );
- mesh.position.set(x,y,z);
- mesh.castShadow=true;
- mesh.receiveShadow=true;
- scene.add(mesh);
- return mesh;
-}
-
-function makeTree(x,z){
- const tree=new THREE.Group();
-
- const trunk=new THREE.Mesh(
-  new THREE.CylinderGeometry(.12,.2,.9,7),
-  material("#80502c")
- );
- trunk.position.y=.45;
- trunk.castShadow=true;
- tree.add(trunk);
-
- const colors=["#277a3b","#388f43","#4ca54b"];
-
- for(let i=0;i<3;i++){
-  const leaves=new THREE.Mesh(
-   new THREE.IcosahedronGeometry(.65-i*.08,1),
-   material(colors[i])
+function box(name, x, y, z, w, h, d, color, group = scene) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(w, h, d),
+    material(color)
   );
-  leaves.position.set(
-   (i-1)*.15,
-   1.05+i*.3,
-   (i%2)*.15
+  mesh.name = name;
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  return mesh;
+}
+
+function makeTree(x, z, scale = 1) {
+  const tree = new THREE.Group();
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.25, 1.1, 7),
+    material("#7a4b2a")
   );
-  leaves.castShadow=true;
-  tree.add(leaves);
- }
+  trunk.position.y = 0.55;
+  trunk.castShadow = true;
+  tree.add(trunk);
 
- tree.position.set(x,0,z);
- scene.add(tree);
-}
-
-function makeRock(x,z,size){
- const rock=new THREE.Mesh(
-  new THREE.DodecahedronGeometry(size,0),
-  material("#8b8c79")
- );
- rock.position.set(x,size*.45,z);
- rock.scale.y=.65;
- rock.rotation.set(.2,x*.1,.4);
- rock.castShadow=true;
- rock.receiveShadow=true;
- scene.add(rock);
-}
-
-function makeTower(x,z,team,king=false){
- const blue=team==="blue";
- const main=blue?"#397dc5":"#c64b4b";
- const dark=blue?"#24517f":"#873339";
- const stone="#c4b18d";
-
- const group=new THREE.Group();
- group.position.set(x,0,z);
- scene.add(group);
-
- const base=new THREE.Mesh(
-  new THREE.BoxGeometry(2.1,.35,2.1),
-  material("#806343")
- );
- base.position.y=.2;
- base.castShadow=true;
- base.receiveShadow=true;
- group.add(base);
-
- // Main castle body
- const body=new THREE.Mesh(
-  new THREE.BoxGeometry(1.65,king?2.6:2.1,1.65),
-  material(main)
- );
- body.position.y=king?1.6:1.35;
- body.castShadow=true;
- body.receiveShadow=true;
- group.add(body);
-
- // Stone corners
- for(const sx of [-.83,.83]){
-  for(const sz of [-.83,.83]){
-   const corner=new THREE.Mesh(
-    new THREE.BoxGeometry(.23,king?2.7:2.2,.23),
-    material(stone)
-   );
-   corner.position.set(sx,king?1.6:1.35,sz);
-   corner.castShadow=true;
-   group.add(corner);
+  const colors = ["#3b8c36", "#4da343", "#62b851"];
+  for (let i = 0; i < 3; i++) {
+    const leaves = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.85 - i * 0.12, 1),
+      material(colors[i])
+    );
+    leaves.position.set((i - 1) * 0.15, 1.35 + i * 0.38, (i % 2) * 0.12);
+    leaves.castShadow = true;
+    leaves.receiveShadow = true;
+    tree.add(leaves);
   }
- }
 
- // Roof
- const roof=new THREE.Mesh(
-  new THREE.ConeGeometry(1.25,king?1.35:1.15,4),
-  material(dark)
- );
- roof.position.y=king?3.55:2.95;
- roof.rotation.y=Math.PI/4;
- roof.castShadow=true;
- group.add(roof);
-
- // Roof decoration
- const cap=new THREE.Mesh(
-  new THREE.SphereGeometry(.18,10,8),
-  material("#f3cf77")
- );
- cap.position.y=king?4.25:3.55;
- group.add(cap);
-
- // Front window
- const windowMesh=new THREE.Mesh(
-  new THREE.BoxGeometry(.4,.65,.06),
-  material("#f3d98b")
- );
- windowMesh.position.set(0,1.45,.84);
- group.add(windowMesh);
-
- // Battlements
- for(let i=-1;i<=1;i++){
-  const merlon=new THREE.Mesh(
-   new THREE.BoxGeometry(.35,.3,.35),
-   material(stone)
-  );
-  merlon.position.set(i*.48,king?2.95:2.45,0);
-  merlon.castShadow=true;
-  group.add(merlon);
- }
-
- // Flag pole
- const pole=new THREE.Mesh(
-  new THREE.CylinderGeometry(.035,.035,.95,7),
-  material("#e6d2a5")
- );
- pole.position.set(.65,king?4.05:3.4,0);
- group.add(pole);
-
- const flag=new THREE.Mesh(
-  new THREE.BoxGeometry(.65,.35,.045),
-  material(blue?"#54c5ff":"#ff665e")
- );
- flag.position.set(.95,king?4.25:3.6,0);
- flag.castShadow=true;
- group.add(flag);
-
- return group;
+  tree.scale.setScalar(scale);
+  tree.position.set(x, 0, z);
+  scene.add(tree);
 }
 
-function makeBridge(x){
- const group=new THREE.Group();
- group.position.x=x;
- scene.add(group);
+function makeRock(x, z, sx = 0.5, sy = 0.35, sz = 0.45) {
+  const rock = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(1, 0),
+    material("#8c8e91")
+  );
+  rock.scale.set(sx, sy, sz);
+  rock.position.set(x, sy * 0.5, z);
+  rock.rotation.y = x * 0.5;
+  rock.castShadow = true;
+  rock.receiveShadow = true;
+  scene.add(rock);
+}
 
- // Stone entrance foundations
- for(const z of [-1.85,1.85]){
-  box("bridge-stone-base",0,.18,z,3.2,.35,.9,"#77736b",group);
+function makeFence(x, z) {
+  const fence = new THREE.Group();
+  fence.position.set(x, 0, z);
+  scene.add(fence);
 
-  for(let side of [-1,1]){
-   box("bridge-stone-edge",side*1.42,.32,z, .28,.45,.85,"#aaa49a",group);
+  for (const px of [-1.4, 0, 1.4]) {
+    box("fence-post", px, 0.55, 0, 0.26, 1.1, 0.26, "#6e4726", fence);
   }
- }
+  box("fence-rail-top", 0, 0.85, 0, 3.1, 0.2, 0.14, "#8a5a32", fence);
+  box("fence-rail-bot", 0, 0.42, 0, 3.1, 0.2, 0.14, "#8a5a32", fence);
+}
 
- // Strong wooden foundation
- box("bridge-shadow",0,.08,0,3.2,.2,3.8,"#493522",group);
+function makeTower(x, z, team, king = false) {
+  const isBlue = team === "blue";
+  const teamColor = isBlue ? "#2d78c9" : "#c93838";
+  const goldColor = "#f5c842";
+  const stoneLight = "#b8b5ad";
+  const stoneDark = "#8a8780";
 
- // Wider wooden deck
- box("bridge-deck",0,.32,0,3,.3,3.5,"#95602f",group);
+  const w = king ? 2.5 : 1.9;
+  const h = king ? 2.1 : 1.75;
 
- // Individual wide wooden planks
- for(let i=0;i<11;i++){
-  const z=-1.55+i*.31;
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+  scene.add(group);
 
+  // Stone base plinth
+  box("tower-base", 0, 0.15, 0, w + 0.35, 0.3, w + 0.35, stoneDark, group);
+
+  // Main stone fortress body
+  box("tower-body", 0, h / 2 + 0.25, 0, w, h, w, stoneLight, group);
+
+  // Recessed wooden floor inside open top
+  box("tower-floor", 0, h + 0.15, 0, w - 0.35, 0.15, w - 0.35, "#6b4728", group);
+
+  // Team-colored trim & banner
+  const bannerSide = isBlue ? -1 : 1;
+  box("tower-trim", 0, h + 0.05, 0, w + 0.08, 0.28, w + 0.08, teamColor, group);
   box(
-   "bridge-plank",
-   0,.51,z,
-   2.95,.13,.27,
-   i%2===0?"#d49a59":"#b77b40",
-   group
-  );
-
-  // Metal nails
-  for(const side of [-1,1]){
-   const nail=new THREE.Mesh(
-    new THREE.CylinderGeometry(.045,.045,.025,8),
-    material("#42352b")
-   );
-
-   nail.rotation.x=Math.PI/2;
-   nail.position.set(side*1.32,.59,z);
-   group.add(nail);
-  }
- }
-
- // Strong side railings
- for(const side of [-1,1]){
-  box(
-   "bridge-rail",
-   side*1.55,.78,0,
-   .2,.65,3.65,
-   "#704523",
-   group
-  );
-
-  for(let i=0;i<6;i++){
-   box(
-    "bridge-post",
-    side*1.55,.9,-1.5+i*.6,
-    .28,.9,.28,
-    "#d4a060",
+    "tower-banner",
+    0,
+    h * 0.62,
+    bannerSide * (w / 2 + 0.04),
+    w * 0.52,
+    h * 0.65,
+    0.08,
+    teamColor,
     group
-   );
+  );
+
+  // Gold crown emblem on front
+  box(
+    "tower-emblem",
+    0,
+    h * 0.58,
+    bannerSide * (w / 2 + 0.09),
+    0.45,
+    0.35,
+    0.06,
+    goldColor,
+    group
+  );
+
+  // Battlements (crenelations around top rim)
+  const step = (w - 0.32) / 2;
+  for (const bx of [-step, 0, step]) {
+    for (const bz of [-step, 0, step]) {
+      if (bx === 0 && bz === 0) continue;
+      box("merlon", bx, h + 0.38, bz, 0.36, 0.26, 0.36, "#cfccc4", group);
+    }
   }
- }
 
- // Heavy underside supports
- for(const side of [-1,1]){
-  box(
-   "bridge-support",
-   side*.95,.12,0,
-   .3,.35,3.5,
-   "#68462d",
-   group
-  );
- }
+  return group;
 }
 
-function createArena(){
+function makeBridge(x) {
+  const group = new THREE.Group();
+  group.position.x = x;
+  scene.add(group);
 
- // Ground foundation
- const ground=new THREE.Mesh(
-  new THREE.BoxGeometry(14,.55,22),
-  material("#66513b")
- );
- ground.position.y=-.3;
- ground.receiveShadow=true;
- scene.add(ground);
-
- // Main grass surface
- const grass=new THREE.Mesh(
-  new THREE.PlaneGeometry(13.8,21.8,32,48),
-  material("#75b94c")
- );
- grass.rotation.x=-Math.PI/2;
- grass.position.y=.01;
- grass.receiveShadow=true;
- scene.add(grass);
-
- // Natural grass variations
- for(let i=0;i<150;i++){
-  const x=Math.sin(i*17.3)*5.9;
-  const z=Math.cos(i*9.7)*9.5;
-
-  if(Math.abs(z)<1.8)continue;
-
-  const patch=new THREE.Mesh(
-   new THREE.CircleGeometry(.13+(i%5)*.07,8),
-   material(
-    i%3===0?"#91d45c":
-    i%3===1?"#579e40":"#6eae47"
-   )
-  );
-
-  patch.rotation.x=-Math.PI/2;
-  patch.position.set(x,.025,z);
-  scene.add(patch);
- }
-
- // Stone perimeter — left and right
- for(const x of [-7.05,7.05]){
-  box(
-   "arena-stone-wall",
-   x,.12,0,
-   .45,.75,22,
-   "#827b70"
-  );
-
-  box(
-   "arena-wall-top",
-   x,.53,0,
-   .55,.18,22,
-   "#b5aa98"
-  );
- }
-
- // Stone perimeter — back and front
- for(const z of [-11.05,11.05]){
-  box(
-   "arena-stone-wall",
-   0,.12,z,
-   14,.75,.45,
-   "#827b70"
-  );
-
-  box(
-   "arena-wall-top",
-   0,.53,z,
-   14,.18,.55,
-   "#b5aa98"
-  );
- }
-
- // River bed — wider channel
- box("river-bed",0,-.04,0,14,.22,2.5,"#15577c");
-
- // Water surface
- water=new THREE.Mesh(
-  new THREE.PlaneGeometry(13.8,2.35,40,12),
-  new THREE.MeshStandardMaterial({
-   color:"#168fc9",
-   roughness:.2,
-   metalness:.12,
-   transparent:true,
-   opacity:.97
-  })
- );
- water.rotation.x=-Math.PI/2;
- water.position.y=.12;
- scene.add(water);
-
- // Water ripples
- for(let i=0;i<26;i++){
-  const line=new THREE.Mesh(
-   new THREE.BoxGeometry(.7,.025,.045),
-   new THREE.MeshBasicMaterial({
-    color:"#b8efff",
-    transparent:true,
-    opacity:.5
-   })
-  );
-
-  line.position.set(
-   Math.sin(i*7)*6,
-   .15,
-   Math.cos(i*3)*.95
-  );
-
-  scene.add(line);
-  waterLines.push(line);
- }
-
- // Natural stone riverbanks
- for(const z of [-1.35,1.35]){
-  // Dark stone foundation
-  box("river-bank",0,.08,z,14,.35,.48,"#77736b");
-
-  // Lighter stone top edge
-  box("river-stone-edge",0,.28,z,14,.18,.32,"#aaa49a");
-
-  // Grass strip
-  box("river-bank-grass",0,.39,z,14,.09,.3,"#83bd50");
-
-  // Individual decorative stones
-  for(let i=0;i<18;i++){
-   const stone= new THREE.Mesh(
-    new THREE.DodecahedronGeometry(.16,0),
-    material(i%2===0?"#918b80":"#b4aa98")
-   );
-
-   stone.position.set(
-    -6.7+i*.78,
-    .39,
-    z+(i%2===0?.12:-.12)
-   );
-
-   stone.scale.set(1.3,.65,.8);
-   scene.add(stone);
+  // Compact wooden planks (Clash Royale style - no high railings)
+  for (let i = 0; i < 7; i++) {
+    const z = -1.05 + i * 0.35;
+    box(
+      "bridge-plank",
+      0,
+      0.22,
+      z,
+      1.95,
+      0.16,
+      0.3,
+      i % 2 === 0 ? "#9c6b3e" : "#875930",
+      group
+    );
   }
- }
 
- // Two bridges
- makeBridge(-3.65);
- makeBridge(3.65);
+  // Side beams
+  for (const side of [-0.95, 0.95]) {
+    box("bridge-beam", side, 0.25, 0, 0.14, 0.22, 2.45, "#5e3c1e", group);
+  }
 
-// Towers
-// Red Princess Towers
-makeTower(-4.8,-6.7,"red");
-makeTower(4.8,-6.7,"red");
-
-// Red King Tower — moved further back
-makeTower(0,-9.5,"red",true);
-
-// Blue Princess Towers
-makeTower(-4.8,6.7,"blue");
-makeTower(4.8,6.7,"blue");
-
-// Blue King Tower — moved further back
-makeTower(0,9.5,"blue",true);
-
- // Trees and rocks around arena
- [
-  [-6,-9], [6,-9],
-  [-6,-4], [6,-4],
-  [-6,4], [6,4],
-  [-6,9], [6,9],
-  [-2,-10.2], [2,-10.2],
-  [-2,10.2], [2,10.2]
- ].forEach(p=>makeTree(p[0],p[1]));
-
- [
-  [-5.8,-2.2],[5.8,-2.2],
-  [-5.8,2.2],[5.8,2.2],
-  [-5.8,8],[5.8,8]
- ].forEach(p=>makeRock(p[0],p[1],.35));
+  // Four stone riverbank pillars framing the bridge
+  for (const sx of [-1.25, 1.25]) {
+    for (const sz of [-1.25, 1.25]) {
+      box("bridge-pillar", sx, 0.45, sz, 0.45, 0.9, 0.45, "#8b8d91", group);
+      box("bridge-pillar-cap", sx, 0.92, sz, 0.5, 0.12, 0.5, "#abaeb3", group);
+    }
+  }
 }
 
-function init(){
- scene=new THREE.Scene();
- scene.background=new THREE.Color("#a6d8ee");
- scene.fog = new THREE.Fog(0x87ceeb, 80, 180);
+function createArena() {
+  // Vast surrounding grass terrain so no empty sky shows
+  const outerGround = new THREE.Mesh(
+    new THREE.PlaneGeometry(80, 100),
+    material("#69ab3b")
+  );
+  outerGround.rotation.x = -Math.PI / 2;
+  outerGround.position.y = -0.05;
+  outerGround.receiveShadow = true;
+  scene.add(outerGround);
 
- camera=new THREE.PerspectiveCamera(
-  39,
-  window.innerWidth/window.innerHeight,
-  .1,
-  100
- );
- 
- // Steeper, battlefield-focused camera
-camera.position.set(0,30,32);
-camera.lookAt(0,0,0);
-camera.fov=41;
-camera.updateProjectionMatrix();
+  // 18 x 26 Checkerboard playable arena tiles
+  const cols = 18;
+  const rows = 26;
+  const tileSize = 0.85;
+  const arenaW = cols * tileSize;
+  const arenaD = rows * tileSize;
 
- renderer=new THREE.WebGLRenderer({
-  antialias:true,
-  powerPreference:"low-power"
- });
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const z = (r - rows / 2 + 0.5) * tileSize;
+      // Leave gap in center for the river
+      if (Math.abs(z) < 0.95) continue;
 
- renderer.setPixelRatio(
-  Math.min(window.devicePixelRatio,1.5)
- );
- renderer.setSize(world.clientWidth,world.clientHeight);
+      const x = (c - cols / 2 + 0.5) * tileSize;
+      const isEven = (r + c) % 2 === 0;
+      const tileColor = isEven ? "#87c94d" : "#79ba43";
 
- renderer.shadowMap.enabled=true;
- renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+      const tile = new THREE.Mesh(
+        new THREE.PlaneGeometry(tileSize, tileSize),
+        material(tileColor)
+      );
+      tile.rotation.x = -Math.PI / 2;
+      tile.position.set(x, 0.01, z);
+      tile.receiveShadow = true;
+      scene.add(tile);
+    }
+  }
 
- renderer.outputColorSpace=THREE.SRGBColorSpace;
- renderer.toneMapping=THREE.ACESFilmicToneMapping;
- renderer.toneMappingExposure=1.15;
+  // Dirt paths connecting towers and bridges
+  const laneX = 4.65;
+  for (const sx of [-laneX, laneX]) {
+    // Vertical lane paths
+    box("path-lane-top", sx, 0.02, -4.6, 1.15, 0.02, 7.2, "#c2a163");
+    box("path-lane-bot", sx, 0.02, 4.6, 1.15, 0.02, 7.2, "#c2a163");
+  }
+  // Horizontal back paths behind Princess Towers
+  box("path-back-top", 0, 0.02, -7.8, laneX * 2 + 1.15, 0.02, 1.15, "#c2a163");
+  box("path-back-bot", 0, 0.02, 7.8, laneX * 2 + 1.15, 0.02, 1.15, "#c2a163");
 
- world.appendChild(renderer.domElement);
+  // River bed & animated water
+  box("river-bed", 0, -0.08, 0, 40, 0.2, 2.0, "#196794");
 
- // Soft sky lighting
- const sky=new THREE.HemisphereLight(
-  "#d9efff",
-  "#526f38",
-  2.1
- );
- scene.add(sky);
+  water = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 1.85),
+    new THREE.MeshStandardMaterial({
+      color: "#22a7e0",
+      roughness: 0.25,
+      metalness: 0.1
+    })
+  );
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = 0.06;
+  scene.add(water);
 
- // Sun
- const sun=new THREE.DirectionalLight("#fff0ce",3);
- sun.position.set(-8,18,12);
- sun.castShadow=true;
- sun.shadow.mapSize.set(1024,1024);
- sun.shadow.camera.left=-15;
- sun.shadow.camera.right=15;
- sun.shadow.camera.top=18;
- sun.shadow.camera.bottom=-18;
- sun.shadow.normalBias=.04;
- scene.add(sun);
+  // Subtle water ripples
+  for (let i = 0; i < 20; i++) {
+    const line = new THREE.Mesh(
+      new THREE.BoxGeometry(0.8, 0.02, 0.06),
+      new THREE.MeshBasicMaterial({ color: "#9ee6ff", transparent: true, opacity: 0.55 })
+    );
+    line.position.set((i - 10) * 1.4, 0.08, Math.sin(i) * 0.5);
+    scene.add(line);
+    waterLines.push(line);
+  }
 
- createArena();
+  // Dirt riverbanks
+  for (const sz of [-0.98, 0.98]) {
+    box("river-bank", 0, 0.05, sz, 40, 0.22, 0.35, "#7d5c3b");
+  }
 
- window.addEventListener("resize",resize);
+  // Bridges
+  makeBridge(-laneX);
+  makeBridge(laneX);
 
- loading.style.display="none";
+  // Red Towers (Top)
+  makeTower(-laneX, -6.2, "red", false);
+  makeTower(laneX, -6.2, "red", false);
+  makeTower(0, -8.8, "red", true);
 
- animate();
+  // Blue Towers (Bottom)
+  makeTower(-laneX, 6.2, "blue", false);
+  makeTower(laneX, 6.2, "blue", false);
+  makeTower(0, 8.8, "blue", true);
+
+  // Wooden Fences behind King Towers
+  makeFence(-4.3, -10.6);
+  makeFence(4.3, -10.6);
+  makeFence(-4.3, 10.6);
+  makeFence(4.3, 10.6);
+
+  // Side Hedges & Elevated Cliffs framing the arena
+  for (const sx of [-8.4, 8.4]) {
+    for (let z = -11; z <= 11; z += 2.2) {
+      if (Math.abs(z) < 1.6) continue;
+      box("hedge", sx, 0.45, z, 1.4, 0.9, 2.0, "#599c30");
+      box("hedge-top", sx, 0.92, z, 1.25, 0.15, 1.85, "#6eb53f");
+    }
+  }
+
+  // Outer decorative trees & rocks
+  [
+    [-7.5, -13], [6.8, -12.8], [8.5, -11.5],
+    [-8.2, 12.2], [7.2, 12.5], [8.8, 11.2],
+    [-9.5, -4], [9.5, -4], [-9.5, 4], [9.5, 4]
+  ].forEach(([x, z]) => makeTree(x, z, 1.15));
+
+  [
+    [-2.5, -12.5], [3.2, -11.8], [-6.8, -10.8],
+    [6.5, 10.8], [-6.5, 10.8], [-2.2, 0.95], [2.4, -0.95]
+  ].forEach(([x, z]) => makeRock(x, z, 0.55, 0.35, 0.45));
 }
 
-function resize(){
- if(!renderer)return;
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color("#69ab3b");
 
- const w=world.clientWidth;
- const h=world.clientHeight;
+  camera = new THREE.PerspectiveCamera(
+    36,
+    world.clientWidth / world.clientHeight,
+    0.1,
+    120
+  );
 
- camera.aspect=w/h;
- camera.updateProjectionMatrix();
+  // High-angle Clash Royale camera framing the full arena
+  camera.position.set(0, 33, 17.5);
+  camera.lookAt(0, 0, 0.5);
 
- renderer.setSize(w,h);
- renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(world.clientWidth, world.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  world.appendChild(renderer.domElement);
+
+  const hemi = new THREE.HemisphereLight("#ffffff", "#4c7a2b", 1.6);
+  scene.add(hemi);
+
+  const sun = new THREE.DirectionalLight("#fff6db", 2.2);
+  sun.position.set(-10, 24, 12);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -16;
+  sun.shadow.camera.right = 16;
+  sun.shadow.camera.top = 18;
+  sun.shadow.camera.bottom = -18;
+  sun.shadow.normalBias = 0.03;
+  scene.add(sun);
+
+  createArena();
+
+  window.addEventListener("resize", resize);
+  loading.style.display = "none";
+  animate();
 }
 
-function animate(){
- requestAnimationFrame(animate);
-
- const t=clock.getElapsedTime();
-
- // Animated water ripples
- waterLines.forEach((line,i)=>{
-  line.position.x+=.012;
-  if(line.position.x>7)line.position.x=-7;
-  line.position.z=Math.sin(t*1.5+i)*.55;
- });
-
- // Gentle water movement
- water.material.color.setHSL(
-  .54+Math.sin(t*1.2)*.008,
-  .72,
-  .48
- );
-
- renderer.render(scene,camera);
+function resize() {
+  if (!renderer) return;
+  const w = world.clientWidth;
+  const h = world.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
 }
 
-try{
- init();
-}catch(error){
- console.error(error);
- loading.style.display="none";
- document.getElementById("error").style.display="flex";
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  waterLines.forEach((line, i) => {
+    line.position.x += 0.015;
+    if (line.position.x > 12) line.position.x = -12;
+    line.position.z = Math.sin(t * 2 + i) * 0.45;
+  });
+
+  renderer.render(scene, camera);
 }
+
+try {
+  init();
+} catch (error) {
+  console.error(error);
+  loading.style.display = "none";
+  document.getElementById("error").style.display = "flex";
+}
+       
 </script>
 </body>
 </html>
