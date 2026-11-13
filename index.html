@@ -275,8 +275,10 @@ function makeTower(x, z, team, king = false) {
   if (king) {
     box("king-throne-base", 0, h + 0.38, 0, 0.62, 0.12, 0.52, "#6e522f", group);
     box("king-crown-pad", 0, h + 0.45, 0, 0.38, 0.08, 0.38, goldColor, group, 0.2);
+    makeKing(group, isBlue); // <--- Spawns the King character
   } else {
     box("princess-turret", 0, h + 0.38, 0, 0.45, 0.14, 0.45, "#525459", group);
+    makePrincess(group, isBlue); // <--- Spawns the Princess character
   }
 
   const bannerSide = isBlue ? -1 : 1;
@@ -360,7 +362,85 @@ function makeBridge(x) {
     }
   }
 }
+function makeKing(parentGroup, isBlue) {
+  const kingGroup = new THREE.Group();
+  kingGroup.position.set(0, 0.52, 0);
+  parentGroup.add(kingGroup);
 
+  const robeColor = isBlue ? "#1c5ec2" : "#c22b2b";
+  const skinColor = "#f5d0b1";
+  const crownColor = "#f5c842";
+
+  // Robe / Body
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.22, 0.28, 0.55, 8),
+    material(robeColor, 0.8)
+  );
+  body.position.y = 0.28;
+  body.castShadow = true;
+  kingGroup.add(body);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.16, 8, 8),
+    material(skinColor, 0.9)
+  );
+  head.position.y = 0.65;
+  head.castShadow = true;
+  kingGroup.add(head);
+
+  // Majestic Crown
+  const crown = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.14, 0.12, 0.16, 6),
+    material(crownColor, 0.3)
+  );
+  crown.position.y = 0.82;
+  kingGroup.add(crown);
+
+  // Big Royale Mustache
+  const mustache = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.05, 0.06),
+    material("#2b1d0c", 0.9)
+  );
+  mustache.position.set(0, 0.62, 0.14);
+  kingGroup.add(mustache);
+}
+
+function makePrincess(parentGroup, isBlue) {
+  const princessGroup = new THREE.Group();
+  princessGroup.position.set(0, 0.45, 0);
+  parentGroup.add(princessGroup);
+
+  const dressColor = isBlue ? "#2874c7" : "#c93636";
+  const skinColor = "#f5d0b1";
+  const hairColor = "#e6a135"; // Classic blonde princess hair
+
+  // Dress
+  const dress = new THREE.Mesh(
+    new THREE.ConeGeometry(0.22, 0.48, 8),
+    material(dressColor, 0.8)
+  );
+  dress.position.y = 0.24;
+  dress.castShadow = true;
+  princessGroup.add(dress);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.13, 8, 8),
+    material(skinColor, 0.9)
+  );
+  head.position.y = 0.52;
+  head.castShadow = true;
+  princessGroup.add(head);
+
+  // Hair bun / crown
+  const hair = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1, 8, 8),
+    material(hairColor, 0.8)
+  );
+  hair.position.set(0, 0.58, -0.04);
+  princessGroup.add(hair);
+}
 function createArena() {
   const outerGround = new THREE.Mesh(
     new THREE.PlaneGeometry(80, 100),
