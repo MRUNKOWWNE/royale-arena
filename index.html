@@ -467,8 +467,7 @@ function init() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   world.appendChild(renderer.domElement);
 
-  const hemi = new THREE.HemisphereLight("#ffffff", "#4c7a2b", 1.6);
-  scene.add(hemi);
+  const hemi = new THREE.HemisphereLight("#e8f5ff", "#527b35", 2.0);
 
   const sun = new THREE.DirectionalLight("#fff6db", 2.2);
   sun.position.set(-10, 24, 12);
