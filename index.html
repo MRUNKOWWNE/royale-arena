@@ -510,7 +510,7 @@ function createArena(){
 function init(){
  scene=new THREE.Scene();
  scene.background=new THREE.Color("#a6d8ee");
- scene.fog=new THREE.Fog("#a6d8ee",24,48);
+ scene.fog = new THREE.Fog(0x87ceeb, 80, 180);
 
  camera=new THREE.PerspectiveCamera(
   39,
