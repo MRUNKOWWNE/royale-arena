@@ -4,605 +4,614 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#101827">
-<title>ROYALE ARENA</title>
+<meta name="theme-color" content="#172b24">
+<title>ROYALE ARENA 3D</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;overflow:hidden;touch-action:manipulation}
-header{height:48px;background:#172b43;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-weight:bold}
-header span{color:#ffd65b}
-#game{height:calc(100dvh - 48px);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 10px 12px;gap:7px}
-#status{display:flex;justify-content:space-between;width:100%;font-weight:bold;font-size:13px}
-#arena{width:min(100%,420px);flex:1;min-height:0;position:relative;border:4px solid #704a27;border-radius:12px;overflow:hidden;background:#69a94c;box-shadow:0 5px 20px #0009}
-canvas{width:100%;height:100%;display:block}
-#hud{width:min(100%,420px);display:flex;flex-direction:column;gap:7px}
-#energybox{height:17px;background:#39265b;border:2px solid #a78bfa;border-radius:10px;overflow:hidden;position:relative}
-#energy{height:100%;width:50%;background:linear-gradient(90deg,#9b55ef,#d69bff)}
-#energylabel{position:absolute;inset:0;text-align:center;font-size:11px;font-weight:bold;text-shadow:1px 1px #000}
-#cards{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.card{height:85px;border:3px solid #b8a0e6;border-radius:9px;background:linear-gradient(#514477,#29233f);color:white;position:relative;font-weight:bold;box-shadow:0 3px 5px #0008}
-.card.selected{border-color:#ffe36b;transform:translateY(-5px);background:linear-gradient(#8065a9,#40325d)}
-.card .cost{position:absolute;top:3px;left:5px;background:#8a51d8;border-radius:50%;padding:4px 7px}
-.card .emoji{display:block;font-size:31px;margin-top:10px}
-.card .name{display:block;font-size:10px}
-#message{text-align:center;font-size:12px;color:#f9dc8a;height:14px}
-button{cursor:pointer}
-@media(max-height:650px){.card{height:65px}.card .emoji{font-size:24px;margin-top:6px}#game{padding:5px;gap:4px}}
+body{
+ margin:0;
+ overflow:hidden;
+ background:#172b24;
+ color:white;
+ font-family:Arial,sans-serif;
+ touch-action:none;
+}
+header{
+ height:52px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ padding:0 15px;
+ background:linear-gradient(#263f35,#142a24);
+ border-bottom:2px solid #947044;
+ font-weight:bold;
+ letter-spacing:1px;
+}
+.logo{color:#ffdf77}
+#game{
+ position:relative;
+ width:100%;
+ height:calc(100dvh - 52px);
+ overflow:hidden;
+}
+#world{
+ position:absolute;
+ inset:0;
+}
+#world canvas{
+ display:block;
+ width:100%;
+ height:100%;
+}
+#topinfo{
+ position:absolute;
+ top:12px;
+ left:0;
+ right:0;
+ display:flex;
+ justify-content:space-between;
+ padding:0 12px;
+ pointer-events:none;
+ font-weight:bold;
+ text-shadow:2px 2px 4px #000;
+ font-size:13px;
+}
+.pill{
+ background:#14251edb;
+ border:1px solid #d5b16d;
+ border-radius:20px;
+ padding:8px 12px;
+}
+#bottom{
+ position:absolute;
+ bottom:15px;
+ left:50%;
+ transform:translateX(-50%);
+ width:min(92%,360px);
+ text-align:center;
+ pointer-events:none;
+}
+#message{
+ display:inline-block;
+ padding:8px 14px;
+ border-radius:20px;
+ background:#14251edb;
+ border:1px solid #d5b16d;
+ font-size:12px;
+}
+#loading{
+ position:absolute;
+ inset:0;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#172b24;
+ z-index:5;
+ font-weight:bold;
+ letter-spacing:2px;
+}
+#loading small{
+ display:block;
+ margin-top:12px;
+ color:#d9c58c;
+ text-align:center;
+}
+#error{
+ display:none;
+ position:absolute;
+ inset:0;
+ background:#172b24;
+ z-index:8;
+ padding:30px;
+ text-align:center;
+ align-items:center;
+ justify-content:center;
+}
 </style>
 </head>
+
 <body>
 <header>
- <span>⚔ ROYALE ARENA</span>
- <span>🏆 <b id="trophies">0</b></span>
+ <span class="logo">⚔ ROYALE ARENA</span>
+ <span>🏆 0</span>
 </header>
+
 <div id="game">
- <div id="status"><span>🔵 YOUR KING</span><span id="timer">03:00</span><span>🔴 ENEMY KING</span></div>
- <div id="arena"><canvas id="battle" width="600" height="900"></canvas></div>
- <div id="hud">
-  <div id="energybox"><div id="energy"></div><div id="energylabel">5 / 10 ENERGY</div></div>
-  <div id="cards">
-   <button class="card selected" data-card="knight"><span class="cost">3</span><span class="emoji">⚔️</span><span class="name">KNIGHT</span></button>
-   <button class="card" data-card="archer"><span class="cost">3</span><span class="emoji">🏹</span><span class="name">ARCHER</span></button>
-   <button class="card" data-card="giant"><span class="cost">5</span><span class="emoji">🗿</span><span class="name">GIANT</span></button>
-   <button class="card" data-card="wizard"><span class="cost">4</span><span class="emoji">🧙</span><span class="name">WIZARD</span></button>
+ <div id="world"></div>
+
+ <div id="topinfo">
+  <span class="pill">🔵 BLUE KINGDOM</span>
+  <span class="pill">🔴 RED KINGDOM</span>
+ </div>
+
+ <div id="bottom">
+  <span id="message">WELCOME TO THE 3D ARENA</span>
+ </div>
+
+ <div id="loading">
+  <div>
+   <div>BUILDING ROYALE ARENA</div>
+   <small>Loading 3D world...</small>
   </div>
-  <div id="message">Select a card, then tap your side of the arena!</div>
+ </div>
+
+ <div id="error">
+  <div>
+   <h2>3D WORLD COULD NOT LOAD</h2>
+   <p>Check your internet connection and refresh the page.</p>
+   <p>Make sure your browser supports WebGL.</p>
+  </div>
  </div>
 </div>
-<script>
-const canvas=document.getElementById("battle");
-const ctx=canvas.getContext("2d");
-const W=600,H=900;
-let units=[],shots=[],energy=5,selected="knight";
-let enemyEnergy=5,seconds=180,ended=false,last=0,aiTimer=3;
-let towers=[
- {x:100,y:220,team:"red",lane:0,hp:1000,max:1000,kind:"side"},
- {x:500,y:220,team:"red",lane:1,hp:1000,max:1000,kind:"side"},
- {x:300,y:90,team:"red",lane:-1,hp:2000,max:2000,kind:"king"},
- {x:100,y:680,team:"blue",lane:0,hp:1000,max:1000,kind:"side"},
- {x:500,y:680,team:"blue",lane:1,hp:1000,max:1000,kind:"side"},
- {x:300,y:810,team:"blue",lane:-1,hp:2000,max:2000,kind:"king"}
-];
-const data={
- knight:{cost:3,hp:180,damage:35,speed:75,range:30,rate:1.1,radius:22,emoji:"⚔️"},
- archer:{cost:3,hp:100,damage:24,speed:62,range:145,rate:1.2,radius:18,emoji:"🏹"},
- giant:{cost:5,hp:650,damage:70,speed:32,range:35,rate:1.5,radius:30},
- wizard:{cost:4,hp:140,damage:55,speed:45,range:125,rate:1.5,radius:21,emoji:"🧙"}
-};
-function deploy(type,team,x,y){
- let d=data[type];
- units.push({type,team,x,y,lane:x<300?0:1,hp:d.hp,max:d.hp,damage:d.damage,speed:d.speed,range:d.range,rate:d.rate,cool:0,radius:d.radius,emoji:d.emoji||"🗿"});
-}
-document.querySelectorAll(".card").forEach(b=>b.onclick=()=>{
- selected=b.dataset.card;
- document.querySelectorAll(".card").forEach(c=>c.classList.toggle("selected",c===b));
-});
-canvas.addEventListener("pointerdown",e=>{
- if(ended)return;
- let r=canvas.getBoundingClientRect();
- let x=(e.clientX-r.left)/r.width*W;
- let y=(e.clientY-r.top)/r.height*H;
- if(y<450){message("Deploy troops on your side!");return}
- let d=data[selected];
- if(energy<d.cost){message("Not enough energy!");return}
- energy-=d.cost;
- deploy(selected,"blue",Math.max(65,Math.min(535,x)),Math.max(480,Math.min(850,y)));
- message(selected.toUpperCase()+" DEPLOYED!");
-});
-function message(s){document.getElementById("message").textContent=s}
 
-function roundBox(x,y,w,h,r,color){
- ctx.fillStyle=color;
- ctx.beginPath();
- ctx.roundRect(x,y,w,h,r);
- ctx.fill();
+<script type="module">
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+const world=document.getElementById("world");
+const loading=document.getElementById("loading");
+
+let scene,camera,renderer;
+let water,waterLines=[];
+let clock=new THREE.Clock();
+
+function material(color,roughness=0.9){
+ return new THREE.MeshStandardMaterial({
+  color,
+  roughness
+ });
 }
 
-function drawArena(){
-
- // Helpers for 3D cartoon terrain
- function gradient(x,y,w,h,c1,c2){
-  let g=ctx.createLinearGradient(x,y,x+w,y+h);
-  g.addColorStop(0,c1);
-  g.addColorStop(1,c2);
-  return g;
- }
-
- function ellipse(x,y,rx,ry,color){
-  ctx.fillStyle=color;
-  ctx.beginPath();
-  ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);
-  ctx.fill();
- }
-
- // 1. Deep green battlefield background
- ctx.fillStyle=gradient(0,0,600,900,"#a0d66a","#397d36");
- ctx.fillRect(0,0,W,H);
-
- // 2. Raised outer arena border
- ctx.fillStyle="#49331f";
- ctx.fillRect(0,0,600,900);
-
- ctx.fillStyle=gradient(0,0,600,900,"#b98a4c","#75502e");
- ctx.fillRect(9,9,582,882);
-
- ctx.fillStyle=gradient(0,0,600,900,"#86bd53","#4b8b39");
- ctx.fillRect(18,18,564,864);
-
- // 3. Main grass field
- ctx.fillStyle=gradient(0,0,0,900,"#91ce5e","#4d983f");
- ctx.fillRect(25,25,550,850);
-
- // Soft grass patches
- for(let i=0;i<95;i++){
-  let x=(i*137+43)%550+25;
-  let y=(i*193+61)%850+25;
-
-  if(y>390&&y<510)continue;
-
-  ellipse(x,y,13+(i%4)*3,7+(i%3)*2,
-   i%2===0?"#b5e57b35":"#245d2830");
- }
-
- // Small grass blades
- ctx.strokeStyle="#d4ed8c88";
- ctx.lineWidth=2;
-
- for(let i=0;i<65;i++){
-  let x=(i*79+22)%550+25;
-  let y=(i*127+37)%850+25;
-
-  if(y>390&&y<510)continue;
-
-  ctx.beginPath();
-  ctx.moveTo(x,y+5);
-  ctx.lineTo(x-3,y-3);
-  ctx.moveTo(x,y+5);
-  ctx.lineTo(x+4,y-4);
-  ctx.stroke();
- }
-
- // 4. Decorative lane borders
- ctx.fillStyle="#36743b";
- ctx.fillRect(25,25,8,850);
- ctx.fillRect(567,25,8,850);
-
- // Soft lane markings
- ctx.strokeStyle="#d9f3a033";
- ctx.lineWidth=3;
- ctx.setLineDash([16,22]);
-
- ctx.beginPath();
- ctx.moveTo(300,30);
- ctx.lineTo(300,870);
- ctx.stroke();
-
- ctx.setLineDash([]);
-
- // 5. River banks with dimensional edges
- ctx.fillStyle="#806039";
- ctx.fillRect(20,397,560,111);
-
- ctx.fillStyle="#d2b66e";
- ctx.fillRect(20,397,560,12);
-
- ctx.fillStyle="#a6c966";
- ctx.fillRect(20,409,560,5);
-
- ctx.fillStyle="#d2b66e";
- ctx.fillRect(20,496,560,12);
-
- ctx.fillStyle="#719d47";
- ctx.fillRect(20,490,560,6);
-
- // 6. Deep blue river
- ctx.fillStyle=gradient(0,410,0,85,"#53c8eb","#075a9d");
- ctx.fillRect(20,414,560,79);
-
- // River depth shadows
- ctx.fillStyle="#064f86";
- ctx.fillRect(20,478,560,15);
-
- // Water reflections
- for(let i=0;i<16;i++){
-  let x=(i*71+20)%550+25;
-  let y=421+(i*19)%62;
-
-  ctx.strokeStyle=i%2===0?"#b8f2ff99":"#ffffff55";
-  ctx.lineWidth=3;
-
-  ctx.beginPath();
-  ctx.moveTo(x,y);
-  ctx.quadraticCurveTo(x+12,y-5,x+30,y);
-  ctx.stroke();
- }
-
- // 7. Two raised wooden bridges
- function bridge(x){
-
-  // Bridge shadow
-  ctx.fillStyle="#00000055";
-  ctx.beginPath();
-  ctx.roundRect(x-7,405,89,105,8);
-  ctx.fill();
-
-  // Stone supports
-  roundBox(x-5,411,85,88,7,"#72553a");
-  roundBox(x,413,75,82,5,"#a77b47");
-
-  // Wooden deck
-  ctx.save();
-  ctx.shadowColor="#00000066";
-  ctx.shadowBlur=9;
-  ctx.shadowOffsetY=5;
-
-  roundBox(x+4,415,67,76,4,"#704321");
-  ctx.restore();
-
-  // Planks
-  for(let i=0;i<6;i++){
-   let py=417+i*12;
-
-   let wood=gradient(x,py,0,10,
-    i%2===0?"#e5b875":"#bd8247",
-    i%2===0?"#a96c36":"#85502d"
-   );
-
-   roundBox(x+7,py,61,10,2,wood);
-
-   ctx.strokeStyle="#714629";
-   ctx.lineWidth=1.5;
-   ctx.strokeRect(x+7,py,61,10);
-
-   // Wooden nails
-   ellipse(x+13,py+5,1.5,1.5,"#47301f");
-   ellipse(x+62,py+5,1.5,1.5,"#47301f");
-  }
-
-  // Raised bridge railings
-  roundBox(x-4,408,7,82,3,"#684126");
-  roundBox(x+72,408,7,82,3,"#684126");
-
-  // Top rail highlights
-  roundBox(x-5,407,9,6,3,"#e5b779");
-  roundBox(x+71,407,9,6,3,"#e5b779");
-
-  for(let i=0;i<5;i++){
-   let py=414+i*16;
-   roundBox(x-3,py,6,9,2,"#d49a57");
-   roundBox(x+73,py,6,9,2,"#d49a57");
-  }
- }
-
- bridge(65);
- bridge(460);
-
- // 8. Stone decorations around the map
- function rock(x,y,size){
-  ellipse(x+3,y+5,size*1.2,size*.7,"#00000035");
-
-  ctx.fillStyle="#756d5b";
-  ctx.beginPath();
-  ctx.moveTo(x-size,y);
-  ctx.lineTo(x-size*.55,y-size*.8);
-  ctx.lineTo(x+size*.45,y-size);
-  ctx.lineTo(x+size,y-size*.25);
-  ctx.lineTo(x+size*.8,y+size*.6);
-  ctx.lineTo(x-size*.5,y+size*.7);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle="#b8ad91";
-  ctx.beginPath();
-  ctx.moveTo(x-size*.55,y-size*.8);
-  ctx.lineTo(x+size*.45,y-size);
-  ctx.lineTo(x+size*.8,y-size*.25);
-  ctx.lineTo(x,y-size*.15);
-  ctx.closePath();
-  ctx.fill();
- }
-
- rock(47,350,13);
- rock(550,350,15);
- rock(45,545,12);
- rock(552,550,14);
- rock(70,790,10);
- rock(530,790,11);
-
- // 9. Cartoon bushes
- function bush(x,y){
-  ellipse(x+3,y+7,19,9,"#00000035");
-
-  ellipse(x,y,15,12,"#246d35");
-  ellipse(x-10,y+2,11,10,"#328b3d");
-  ellipse(x+10,y+1,12,11,"#3b9b42");
-  ellipse(x-3,y-7,11,10,"#65b94b");
-  ellipse(x+8,y-6,9,8,"#77c957");
- }
-
- bush(52,160);
- bush(548,160);
- bush(48,735);
- bush(550,735);
-
- // 10. Little flowers
- for(let i=0;i<12;i++){
-  let x=(i*113+70)%520+40;
-  let y=(i*167+100)%850+20;
-
-  if(y>390&&y<510)continue;
-
-  ellipse(x,y,3,3,i%2===0?"#fff1a3":"#ffffff");
-  ellipse(x+4,y+3,2,2,"#e9a3d4");
- }
-
- // 11. Final arena edge highlights
- ctx.strokeStyle="#e6c486";
- ctx.lineWidth=4;
- ctx.strokeRect(10,10,580,880);
-
- ctx.strokeStyle="#315e2b";
- ctx.lineWidth=5;
- ctx.strokeRect(22,22,556,856);
+function box(name,x,y,z,w,h,d,color,group=scene){
+ const mesh=new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),
+  material(color)
+ );
+ mesh.name=name;
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ group.add(mesh);
+ return mesh;
 }
 
+function cylinder(x,y,z,r1,r2,h,color,segments=8){
+ const mesh=new THREE.Mesh(
+  new THREE.CylinderGeometry(r1,r2,h,segments),
+  material(color)
+ );
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ scene.add(mesh);
+ return mesh;
+}
 
-function drawTower(t){
- let blue=t.team==="blue";
- let main=blue?"#347fce":"#c94b4b";
- let dark=blue?"#164b83":"#852d35";
- let light=blue?"#8ec9f0":"#f08b72";
+function makeTree(x,z){
+ const tree=new THREE.Group();
 
- ctx.save();
+ const trunk=new THREE.Mesh(
+  new THREE.CylinderGeometry(.12,.2,.9,7),
+  material("#80502c")
+ );
+ trunk.position.y=.45;
+ trunk.castShadow=true;
+ tree.add(trunk);
 
- // Tower shadow
- ctx.fillStyle="#00000045";
- ctx.beginPath();
- ctx.ellipse(t.x+5,t.y+35,53,27,0,0,Math.PI*2);
- ctx.fill();
+ const colors=["#277a3b","#388f43","#4ca54b"];
 
- // Stone foundation
- roundBox(t.x-47,t.y-35,94,78,9,"#806b51");
- roundBox(t.x-41,t.y-31,82,68,7,"#c1a477");
-
- // Main tower body
- roundBox(t.x-36,t.y-43,72,77,6,dark);
- roundBox(t.x-31,t.y-40,62,70,5,main);
-
- // Stone details
  for(let i=0;i<3;i++){
-  ctx.fillStyle="#ffffff25";
-  ctx.fillRect(t.x-27+i*19,t.y-33,11,5);
-  ctx.fillStyle="#00000022";
-  ctx.fillRect(t.x-27+i*19,t.y+20,11,5);
+  const leaves=new THREE.Mesh(
+   new THREE.IcosahedronGeometry(.65-i*.08,1),
+   material(colors[i])
+  );
+  leaves.position.set(
+   (i-1)*.15,
+   1.05+i*.3,
+   (i%2)*.15
+  );
+  leaves.castShadow=true;
+  tree.add(leaves);
  }
 
- // Tower roof
- ctx.fillStyle=dark;
- ctx.beginPath();
- ctx.moveTo(t.x-45,t.y-40);
- ctx.lineTo(t.x,t.y-85);
- ctx.lineTo(t.x+45,t.y-40);
- ctx.closePath();
- ctx.fill();
+ tree.position.set(x,0,z);
+ scene.add(tree);
+}
 
- ctx.fillStyle=main;
- ctx.beginPath();
- ctx.moveTo(t.x-36,t.y-42);
- ctx.lineTo(t.x,t.y-77);
- ctx.lineTo(t.x+36,t.y-42);
- ctx.closePath();
- ctx.fill();
+function makeRock(x,z,size){
+ const rock=new THREE.Mesh(
+  new THREE.DodecahedronGeometry(size,0),
+  material("#8b8c79")
+ );
+ rock.position.set(x,size*.45,z);
+ rock.scale.y=.65;
+ rock.rotation.set(.2,x*.1,.4);
+ rock.castShadow=true;
+ rock.receiveShadow=true;
+ scene.add(rock);
+}
 
- // Roof highlight
- ctx.strokeStyle=light;
- ctx.lineWidth=4;
- ctx.beginPath();
- ctx.moveTo(t.x-30,t.y-44);
- ctx.lineTo(t.x,t.y-73);
- ctx.stroke();
+function makeTower(x,z,team,king=false){
+ const blue=team==="blue";
+ const main=blue?"#397dc5":"#c64b4b";
+ const dark=blue?"#24517f":"#873339";
+ const stone="#c4b18d";
 
- // Windows
- roundBox(t.x-9,t.y-19,18,27,8,"#26374b");
- roundBox(t.x-5,t.y-15,10,19,5,"#f6d58b");
+ const group=new THREE.Group();
+ group.position.set(x,0,z);
+ scene.add(group);
+
+ const base=new THREE.Mesh(
+  new THREE.BoxGeometry(2.1,.35,2.1),
+  material("#806343")
+ );
+ base.position.y=.2;
+ base.castShadow=true;
+ base.receiveShadow=true;
+ group.add(base);
+
+ // Main castle body
+ const body=new THREE.Mesh(
+  new THREE.BoxGeometry(1.65,king?2.6:2.1,1.65),
+  material(main)
+ );
+ body.position.y=king?1.6:1.35;
+ body.castShadow=true;
+ body.receiveShadow=true;
+ group.add(body);
+
+ // Stone corners
+ for(const sx of [-.83,.83]){
+  for(const sz of [-.83,.83]){
+   const corner=new THREE.Mesh(
+    new THREE.BoxGeometry(.23,king?2.7:2.2,.23),
+    material(stone)
+   );
+   corner.position.set(sx,king?1.6:1.35,sz);
+   corner.castShadow=true;
+   group.add(corner);
+  }
+ }
+
+ // Roof
+ const roof=new THREE.Mesh(
+  new THREE.ConeGeometry(1.25,king?1.35:1.15,4),
+  material(dark)
+ );
+ roof.position.y=king?3.55:2.95;
+ roof.rotation.y=Math.PI/4;
+ roof.castShadow=true;
+ group.add(roof);
+
+ // Roof decoration
+ const cap=new THREE.Mesh(
+  new THREE.SphereGeometry(.18,10,8),
+  material("#f3cf77")
+ );
+ cap.position.y=king?4.25:3.55;
+ group.add(cap);
+
+ // Front window
+ const windowMesh=new THREE.Mesh(
+  new THREE.BoxGeometry(.4,.65,.06),
+  material("#f3d98b")
+ );
+ windowMesh.position.set(0,1.45,.84);
+ group.add(windowMesh);
 
  // Battlements
  for(let i=-1;i<=1;i++){
-  roundBox(t.x+i*24-8,t.y-48,16,13,3,main);
+  const merlon=new THREE.Mesh(
+   new THREE.BoxGeometry(.35,.3,.35),
+   material(stone)
+  );
+  merlon.position.set(i*.48,king?2.95:2.45,0);
+  merlon.castShadow=true;
+  group.add(merlon);
  }
 
- // Flag pole and flag
- ctx.fillStyle="#e6d2a5";
- ctx.fillRect(t.x+28,t.y-95,4,34);
- ctx.fillStyle=blue?"#4fc3ff":"#ff655c";
- ctx.beginPath();
- ctx.moveTo(t.x+32,t.y-94);
- ctx.lineTo(t.x+57,t.y-87);
- ctx.lineTo(t.x+32,t.y-78);
- ctx.closePath();
- ctx.fill();
-
- // Tower symbol
- ctx.font="bold 25px Arial";
- ctx.textAlign="center";
- ctx.fillStyle="#ffffff";
- ctx.fillText(t.kind==="king"?"♛":"♜",t.x,t.y+16);
-
- // Health bar
- roundBox(t.x-39,t.y-109,78,11,5,"#252525");
- roundBox(t.x-37,t.y-107,74*Math.max(0,t.hp/t.max),7,3,"#54e35e");
-
- ctx.restore();
-}
-
-function drawUnit(u){
- ctx.save();
-
- // Ground shadow
- ctx.fillStyle="#00000055";
- ctx.beginPath();
- ctx.ellipse(u.x+3,u.y+u.radius*.8,u.radius*1.25,u.radius*.55,0,0,Math.PI*2);
- ctx.fill();
-
- // Outer body ring
- ctx.fillStyle=u.team==="blue"?"#124a9c":"#8d2029";
- ctx.beginPath();
- ctx.arc(u.x,u.y,u.radius+4,0,Math.PI*2);
- ctx.fill();
-
- // Body gradient
- let g=ctx.createRadialGradient(
-  u.x-u.radius*.4,u.y-u.radius*.5,2,
-  u.x,u.y,u.radius+3
+ // Flag pole
+ const pole=new THREE.Mesh(
+  new THREE.CylinderGeometry(.035,.035,.95,7),
+  material("#e6d2a5")
  );
- if(u.team==="blue"){
-  g.addColorStop(0,"#8bd9ff");
-  g.addColorStop(1,"#1760bb");
- }else{
-  g.addColorStop(0,"#ffb0a0");
-  g.addColorStop(1,"#b72e38");
+ pole.position.set(.65,king?4.05:3.4,0);
+ group.add(pole);
+
+ const flag=new THREE.Mesh(
+  new THREE.BoxGeometry(.65,.35,.045),
+  material(blue?"#54c5ff":"#ff665e")
+ );
+ flag.position.set(.95,king?4.25:3.6,0);
+ flag.castShadow=true;
+ group.add(flag);
+
+ return group;
+}
+
+function makeBridge(x){
+ const group=new THREE.Group();
+ group.position.x=x;
+ scene.add(group);
+
+ // Bridge supports
+ box("bridge-shadow",0,.08,0,2.6,.15,3.2,"#62412a",group);
+
+ // Deck
+ box("bridge-deck",0,.3,0,2.35,.25,3,"#a66d38",group);
+
+ // Individual wooden planks
+ for(let i=0;i<9;i++){
+  const z=-1.35+i*.34;
+
+  box(
+   "bridge-plank",
+   0,.45,z,
+   2.3,.13,.3,
+   i%2===0?"#d49a59":"#bd8043",
+   group
+  );
+
+  // Nails
+  for(const side of [-1,1]){
+   const nail=new THREE.Mesh(
+    new THREE.CylinderGeometry(.035,.035,.025,8),
+    material("#42352b")
+   );
+   nail.rotation.x=Math.PI/2;
+   nail.position.set(side*1.02,.53,z);
+   group.add(nail);
+  }
  }
- ctx.fillStyle=g;
- ctx.beginPath();
- ctx.arc(u.x,u.y,u.radius,0,Math.PI*2);
- ctx.fill();
 
- // Troop outline
- ctx.strokeStyle="#ffffff";
- ctx.lineWidth=2;
- ctx.stroke();
+ // Side railings
+ for(const side of [-1,1]){
+  box("bridge-rail",side*1.18,.85,0,.16,.8,3.1,"#714523",group);
 
- // Troop symbol
- ctx.font=(u.radius>25?"32px":"27px")+" Arial";
- ctx.textAlign="center";
- ctx.textBaseline="middle";
- ctx.fillText(u.emoji,u.x,u.y+1);
+  for(let i=0;i<5;i++){
+   box(
+    "bridge-post",
+    side*1.18,.95,-1.35+i*.67,
+    .23,.95,.23,
+    "#d4a060",
+    group
+   );
+  }
+ }
 
- // Health bar background
- roundBox(u.x-23,u.y-u.radius-15,46,7,3,"#222222");
- roundBox(
-  u.x-22,u.y-u.radius-14,
-  44*Math.max(0,u.hp/u.max),5,2,
-  "#61ed66"
+ // Bridge underside supports
+ for(const side of [-1,1]){
+  box(
+   "bridge-support",
+   side*.7,.12,0,
+   .25,.3,3,
+   "#68462d",
+   group
+  );
+ }
+}
+
+function createArena(){
+ // Ground
+ const ground=new THREE.Mesh(
+  new THREE.BoxGeometry(14,.45,22),
+  material("#568e3e")
+ );
+ ground.position.y=-.25;
+ ground.receiveShadow=true;
+ scene.add(ground);
+
+ // Grass top
+ const grass=new THREE.Mesh(
+  new THREE.PlaneGeometry(13.8,21.8),
+  material("#75b94c")
+ );
+ grass.rotation.x=-Math.PI/2;
+ grass.position.y=.01;
+ grass.receiveShadow=true;
+ scene.add(grass);
+
+ // Decorative grass patches
+ for(let i=0;i<90;i++){
+  const x=Math.sin(i*17.3)*5.9;
+  const z=Math.cos(i*9.7)*9.5;
+
+  if(Math.abs(z)<1.6)continue;
+
+  const patch=new THREE.Mesh(
+   new THREE.CircleGeometry(.15+(i%4)*.08,7),
+   material(i%2===0?"#91d45c":"#579e40")
+  );
+  patch.rotation.x=-Math.PI/2;
+  patch.position.set(x,.025,z);
+  scene.add(patch);
+ }
+
+ // Arena outer stone border
+ for(const x of [-7,7]){
+  box("arena-side-wall",x,.25,0,.45,.8,22.5,"#80603e");
+  box("arena-side-highlight",x,.7,0,.5,.12,22.5,"#c5a06b");
+ }
+
+ for(const z of [-11,11]){
+  box("arena-end-wall",0,.25,z,14,.8,.45,"#80603e");
+ }
+
+ // River bed
+ box("river-bed",0,-.04,0,14,.18,1.8,"#15577c");
+
+ // Water surface
+ water=new THREE.Mesh(
+  new THREE.PlaneGeometry(13.8,1.65,30,8),
+  new THREE.MeshStandardMaterial({
+   color:"#27a7db",
+   roughness:.25,
+   metalness:.08,
+   transparent:true,
+   opacity:.96
+  })
+ );
+ water.rotation.x=-Math.PI/2;
+ water.position.y=.12;
+ scene.add(water);
+
+ // Water ripples
+ for(let i=0;i<18;i++){
+  const line=new THREE.Mesh(
+   new THREE.BoxGeometry(.55,.025,.035),
+   new THREE.MeshBasicMaterial({
+    color:"#a9edff",
+    transparent:true,
+    opacity:.45
+   })
+  );
+  line.position.set(Math.sin(i*7)*6,.15,Math.cos(i*3)*.65);
+  scene.add(line);
+  waterLines.push(line);
+ }
+
+ // River banks
+ for(const z of [-.98,.98]){
+  box("river-bank",0,.12,z,14,.3,.2,"#c1a66c");
+  box("river-bank-grass",0,.3,z,14,.08,.22,"#83bd50");
+ }
+
+ // Two bridges
+ makeBridge(-3.65);
+ makeBridge(3.65);
+
+ // Towers
+ makeTower(-4.8,-6.7,"red");
+ makeTower(4.8,-6.7,"red");
+ makeTower(0,-9.5,"red",true);
+
+ makeTower(-4.8,6.7,"blue");
+ makeTower(4.8,6.7,"blue");
+ makeTower(0,9.5,"blue",true);
+
+ // Trees and rocks around arena
+ [
+  [-6,-9], [6,-9],
+  [-6,-4], [6,-4],
+  [-6,4], [6,4],
+  [-6,9], [6,9],
+  [-2,-10.2], [2,-10.2],
+  [-2,10.2], [2,10.2]
+ ].forEach(p=>makeTree(p[0],p[1]));
+
+ [
+  [-5.8,-2.2],[5.8,-2.2],
+  [-5.8,2.2],[5.8,2.2],
+  [-5.8,8],[5.8,8]
+ ].forEach(p=>makeRock(p[0],p[1],.35));
+}
+
+function init(){
+ scene=new THREE.Scene();
+ scene.background=new THREE.Color("#a6d8ee");
+ scene.fog=new THREE.Fog("#a6d8ee",24,48);
+
+ camera=new THREE.PerspectiveCamera(
+  39,
+  window.innerWidth/window.innerHeight,
+  .1,
+  100
  );
 
- ctx.restore();
+ camera.position.set(0,17,25);
+ camera.lookAt(0,0,0);
+
+ renderer=new THREE.WebGLRenderer({
+  antialias:true,
+  powerPreference:"low-power"
+ });
+
+ renderer.setPixelRatio(
+  Math.min(window.devicePixelRatio,1.5)
+ );
+ renderer.setSize(world.clientWidth,world.clientHeight);
+
+ renderer.shadowMap.enabled=true;
+ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=1.15;
+
+ world.appendChild(renderer.domElement);
+
+ // Soft sky lighting
+ const sky=new THREE.HemisphereLight(
+  "#d9efff",
+  "#526f38",
+  2.1
+ );
+ scene.add(sky);
+
+ // Sun
+ const sun=new THREE.DirectionalLight("#fff0ce",3);
+ sun.position.set(-8,18,12);
+ sun.castShadow=true;
+ sun.shadow.mapSize.set(1024,1024);
+ sun.shadow.camera.left=-15;
+ sun.shadow.camera.right=15;
+ sun.shadow.camera.top=18;
+ sun.shadow.camera.bottom=-18;
+ sun.shadow.normalBias=.04;
+ scene.add(sun);
+
+ createArena();
+
+ window.addEventListener("resize",resize);
+
+ loading.style.display="none";
+
+ animate();
 }
 
-function drawTower(t){
- let blue=t.team==="blue";
- ctx.fillStyle=blue?"#2476dc":"#c83d42";
- ctx.fillRect(t.x-37,t.y-35,74,70);
- ctx.fillStyle="#e5d2a2";ctx.fillRect(t.x-29,t.y-46,58,18);
- ctx.fillStyle="#f7d46d";ctx.fillRect(t.x-12,t.y-57,24,12);
- ctx.fillStyle="#fff";ctx.font="bold 17px Arial";ctx.textAlign="center";
- ctx.fillText(t.kind==="king"?"♛":"♜",t.x,t.y+8);
- ctx.fillStyle="#292929";ctx.fillRect(t.x-35,t.y-53,70,7);
- ctx.fillStyle="#55e05f";ctx.fillRect(t.x-35,t.y-53,70*Math.max(0,t.hp/t.max),7);
+function resize(){
+ if(!renderer)return;
+
+ const w=world.clientWidth;
+ const h=world.clientHeight;
+
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
+
+ renderer.setSize(w,h);
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
 }
-function drawUnit(u){
- ctx.fillStyle=u.team==="blue"?"#2476e8":"#dc4242";
- ctx.beginPath();ctx.arc(u.x,u.y,u.radius,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();
- ctx.font="25px Arial";ctx.textAlign="center";
- ctx.fillText(u.emoji,u.x,u.y+9);
- ctx.fillStyle="#222";ctx.fillRect(u.x-20,u.y-u.radius-9,40,5);
- ctx.fillStyle="#5bfa63";ctx.fillRect(u.x-20,u.y-u.radius-9,40*Math.max(0,u.hp/u.max),5);
-}
-function targetFor(u){
- let enemy=u.team==="blue"?"red":"blue";
- let foes=units.filter(v=>v.team===enemy&&v.hp>0&&Math.abs(v.y-u.y)<180&&Math.abs(v.x-u.x)<170);
- if(foes.length)return foes.sort((a,b)=>Math.hypot(a.x-u.x,a.y-u.y)-Math.hypot(b.x-u.x,b.y-u.y))[0];
- let side=towers.find(t=>t.team===enemy&&t.kind==="side"&&t.lane===u.lane&&t.hp>0);
- if(side)return side;
- return towers.find(t=>t.team===enemy&&t.kind==="king");
-}
-function shoot(u,t){
- shots.push({x:u.x,y:u.y,target:t,team:u.team,damage:u.damage,speed:300});
-}
-function update(dt){
- if(ended)return;
- energy=Math.min(10,energy+0.42*dt);
- enemyEnergy=Math.min(10,enemyEnergy+0.4*dt);
- aiTimer-=dt;
- if(aiTimer<=0){
-  let options=Object.keys(data).filter(k=>data[k].cost<=enemyEnergy);
-  if(options.length){
-   let type=options[Math.floor(Math.random()*options.length)];
-   enemyEnergy-=data[type].cost;
-   deploy(type,"red",Math.random()<.5?160:440,120+Math.random()*120);
-  }
-  aiTimer=4+Math.random()*3;
- }
- units.forEach(u=>{
-  if(u.hp<=0)return;
-  u.cool-=dt;
-  let t=targetFor(u);if(!t)return;
-  let dx=t.x-u.x,dy=t.y-u.y,d=Math.hypot(dx,dy);
-  let reach=u.range+u.radius+(t.radius||35);
-  if(d<=reach){
-   if(u.cool<=0){shoot(u,t);u.cool=u.rate}
-  }else if(d>0){
-   let step=Math.min(u.speed*dt,d-reach);
-   u.x+=dx/d*step;u.y+=dy/d*step;
-  }
+
+function animate(){
+ requestAnimationFrame(animate);
+
+ const t=clock.getElapsedTime();
+
+ // Animated water ripples
+ waterLines.forEach((line,i)=>{
+  line.position.x+=.012;
+  if(line.position.x>7)line.position.x=-7;
+  line.position.z=Math.sin(t*1.5+i)*.55;
  });
- units=units.filter(u=>u.hp>0&&u.y>0&&u.y<H);
- shots.forEach(p=>{
-  if(!p.target||p.target.hp<=0){p.dead=true;return}
-  let dx=p.target.x-p.x,dy=p.target.y-p.y,d=Math.hypot(dx,dy);
-  let step=p.speed*dt;
-  if(d<step+12){p.target.hp-=p.damage;p.dead=true}
-  else{p.x+=dx/d*step;p.y+=dy/d*step}
- });
- shots=shots.filter(p=>!p.dead);
- towers.forEach(t=>{
-  if(t.hp<=0)return;
-  let foe=units.filter(u=>u.team!==t.team&&u.hp>0&&Math.hypot(u.x-t.x,u.y-t.y)<175)
-   .sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
-  if(foe){
-   t.cool=(t.cool||0)-dt;
-   if(t.cool<=0){shots.push({x:t.x,y:t.y,target:foe,team:t.team,damage:30,speed:390});t.cool=1}
-  }
- });
- let redKing=towers.find(t=>t.team==="red"&&t.kind==="king");
- let blueKing=towers.find(t=>t.team==="blue"&&t.kind==="king");
- if(redKing.hp<=0)finish(true);
- if(blueKing.hp<=0)finish(false);
+
+ // Gentle water movement
+ water.material.color.setHSL(
+  .54+Math.sin(t*1.2)*.008,
+  .72,
+  .48
+ );
+
+ renderer.render(scene,camera);
 }
-function draw(){
- drawArena();
- towers.forEach(t=>{if(t.hp>0)drawTower(t)});
- units.forEach(drawUnit);
- shots.forEach(p=>{
-  ctx.fillStyle=p.team==="blue"?"#ffe56b":"#ff8d55";
-  ctx.beginPath();ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fill();
- });
+
+try{
+ init();
+}catch(error){
+ console.error(error);
+ loading.style.display="none";
+ document.getElementById("error").style.display="flex";
 }
-function finish(win){
- ended=true;
- document.getElementById("message").textContent=win?"🏆 VICTORY!":"🛡️ DEFEAT!";
- setTimeout(()=>{
-  alert(win?"VICTORY! Your kingdom wins!":"DEFEAT! Try another battle.");
-  location.reload();
- },200);
-}
-function loop(now){
- let dt=Math.min((now-last)/1000,.05)||0;last=now;
- if(!ended){
-  update(dt);
-  draw();
-  document.getElementById("energy").style.width=energy*10+"%";
-  document.getElementById("energylabel").textContent=Math.floor(energy)+" / 10 ENERGY";
-  seconds-=dt;
-  if(seconds<=0){seconds=0;finish(false)}
-  document.getElementById("timer").textContent=
-   String(Math.floor(seconds/60)).padStart(2,"0")+":"+
-   String(Math.floor(seconds%60)).padStart(2,"0");
- }
- requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
 </script>
 </body>
 </html>
