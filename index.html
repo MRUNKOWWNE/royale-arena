@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,7 +143,8 @@ header{
   </div>
  </div>
 </div>
- <script type="module">
+ 
+<script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 const world = document.getElementById("world");
@@ -264,27 +264,21 @@ function makeTower(x, z, team, king = false) {
   group.position.set(x, 0, z);
   scene.add(group);
 
-  // Stepped stone base plinth
   box("tower-base-outer", 0, 0.1, 0, w + 0.48, 0.2, w + 0.48, "#726f68", group);
   box("tower-base-inner", 0, 0.24, 0, w + 0.26, 0.16, w + 0.26, stoneDark, group);
 
-  // Main stone fortress body with vertical block lines simulated via shading
   box("tower-body", 0, h / 2 + 0.28, 0, w, h, w, stoneLight, group);
 
-  // Recessed wooden deck + interior pedestal
   box("tower-floor", 0, h + 0.16, 0, w - 0.36, 0.14, w - 0.36, "#54361c", group);
   box("tower-pedestal", 0, h + 0.28, 0, w * 0.42, 0.16, w * 0.42, teamDark, group);
   
   if (king) {
-    // King character platform/throne base indicator
     box("king-throne-base", 0, h + 0.38, 0, 0.62, 0.12, 0.52, "#6e522f", group);
     box("king-crown-pad", 0, h + 0.45, 0, 0.38, 0.08, 0.38, goldColor, group, 0.2);
   } else {
-    // Princess cannon/turret base
     box("princess-turret", 0, h + 0.38, 0, 0.45, 0.14, 0.45, "#525459", group);
   }
 
-  // Team-colored trim & large front banner
   const bannerSide = isBlue ? -1 : 1;
   box("tower-trim", 0, h + 0.06, 0, w + 0.08, 0.26, w + 0.08, teamColor, group);
   box(
@@ -299,15 +293,12 @@ function makeTower(x, z, team, king = false) {
     group
   );
 
-  // Gold Crown Shield Emblem on the banner front
   const shieldZ = bannerSide * (w / 2 + 0.09);
   box("emblem-base", 0, h * 0.6, shieldZ, 0.48, 0.42, 0.05, goldColor, group, 0.25);
-  // Crown points detail on shield
   box("crown-spike-l", -0.14, h * 0.72, shieldZ + (isBlue ? 0.01 : -0.01), 0.09, 0.14, 0.06, "#ffe680", group);
   box("crown-spike-c", 0, h * 0.75, shieldZ + (isBlue ? 0.01 : -0.01), 0.09, 0.18, 0.06, "#ffe680", group);
   box("crown-spike-r", 0.14, h * 0.72, shieldZ + (isBlue ? 0.01 : -0.01), 0.09, 0.14, 0.06, "#ffe680", group);
 
-  // Flag pole and team flag mounted on top corner battlement
   const poleX = w / 2 - 0.2;
   const poleZ = w / 2 - 0.2;
   const pole = new THREE.Mesh(
@@ -326,12 +317,10 @@ function makeTower(x, z, team, king = false) {
   flag.castShadow = true;
   group.add(flag);
 
-  // Battlements (crenelations around top rim)
   const step = (w - 0.32) / 2;
   for (const bx of [-step, 0, step]) {
     for (const bz of [-step, 0, step]) {
       if (bx === 0 && bz === 0) continue;
-      // Skip corner where flag pole sits
       if (Math.abs(bx - poleX) < 0.1 && Math.abs(bz - poleZ) < 0.1) continue;
       box("merlon", bx, h + 0.4, bz, 0.36, 0.26, 0.36, "#dedbd2", group);
     }
@@ -345,7 +334,6 @@ function makeBridge(x) {
   group.position.x = x;
   scene.add(group);
 
-  // Compact wooden planks (Clash Royale style - no high railings)
   for (let i = 0; i < 7; i++) {
     const z = -1.05 + i * 0.35;
     box(
@@ -361,12 +349,10 @@ function makeBridge(x) {
     );
   }
 
-  // Side beams
   for (const side of [-0.95, 0.95]) {
     box("bridge-beam", side, 0.25, 0, 0.14, 0.22, 2.45, "#5e3c1e", group);
   }
 
-  // Four stone riverbank pillars framing the bridge
   for (const sx of [-1.25, 1.25]) {
     for (const sz of [-1.25, 1.25]) {
       box("bridge-pillar", sx, 0.45, sz, 0.45, 0.9, 0.45, "#8b8d91", group);
@@ -376,7 +362,6 @@ function makeBridge(x) {
 }
 
 function createArena() {
-  // Vast surrounding grass terrain so no empty sky shows
   const outerGround = new THREE.Mesh(
     new THREE.PlaneGeometry(80, 100),
     material("#69ab3b")
@@ -386,17 +371,13 @@ function createArena() {
   outerGround.receiveShadow = true;
   scene.add(outerGround);
 
-  // 18 x 26 Checkerboard playable arena tiles
   const cols = 18;
   const rows = 26;
   const tileSize = 0.85;
-  const arenaW = cols * tileSize;
-  const arenaD = rows * tileSize;
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const z = (r - rows / 2 + 0.5) * tileSize;
-      // Leave gap in center for the river
       if (Math.abs(z) < 0.95) continue;
 
       const x = (c - cols / 2 + 0.5) * tileSize;
@@ -414,18 +395,14 @@ function createArena() {
     }
   }
 
-  // Dirt paths connecting towers and bridges
   const laneX = 4.65;
   for (const sx of [-laneX, laneX]) {
-    // Vertical lane paths
     box("path-lane-top", sx, 0.02, -4.6, 1.15, 0.02, 7.2, "#c2a163");
     box("path-lane-bot", sx, 0.02, 4.6, 1.15, 0.02, 7.2, "#c2a163");
   }
-  // Horizontal back paths behind Princess Towers
   box("path-back-top", 0, 0.02, -7.8, laneX * 2 + 1.15, 0.02, 1.15, "#c2a163");
   box("path-back-bot", 0, 0.02, 7.8, laneX * 2 + 1.15, 0.02, 1.15, "#c2a163");
 
-  // River bed & animated water
   box("river-bed", 0, -0.08, 0, 40, 0.2, 2.0, "#196794");
 
   water = new THREE.Mesh(
@@ -440,7 +417,6 @@ function createArena() {
   water.position.y = 0.06;
   scene.add(water);
 
-  // Subtle water ripples
   for (let i = 0; i < 20; i++) {
     const line = new THREE.Mesh(
       new THREE.BoxGeometry(0.8, 0.02, 0.06),
@@ -451,7 +427,6 @@ function createArena() {
     waterLines.push(line);
   }
 
-  // Shoreline foam strips & layered grass/dirt banks
   for (const sz of [-0.84, 0.84]) {
     const foam = new THREE.Mesh(
       new THREE.BoxGeometry(40, 0.015, 0.12),
@@ -467,27 +442,22 @@ function createArena() {
     box("river-bank-grass", 0, 0.16, sz * 1.06, 40, 0.08, 0.24, "#6ab03b");
   }
 
-  // Bridges
   makeBridge(-laneX);
   makeBridge(laneX);
 
-  // Red Towers (Top)
   makeTower(-laneX, -6.2, "red", false);
   makeTower(laneX, -6.2, "red", false);
   makeTower(0, -8.8, "red", true);
 
-  // Blue Towers (Bottom)
   makeTower(-laneX, 6.2, "blue", false);
   makeTower(laneX, 6.2, "blue", false);
   makeTower(0, 8.8, "blue", true);
 
-  // Wooden Fences behind King Towers
   makeFence(-4.3, -10.6);
   makeFence(4.3, -10.6);
   makeFence(-4.3, 10.6);
   makeFence(4.3, 10.6);
 
-  // Tiered Earth Cliffs & Bushes framing left & right sides
   for (const sx of [-8.5, 8.5]) {
     for (let z = -12; z <= 12; z += 2.2) {
       if (Math.abs(z) < 1.6) continue;
@@ -503,17 +473,18 @@ function createArena() {
     [-7.8, 9.5, 1.0], [7.8, 9.5, 1.0]
   ].forEach(([x, z, s]) => makeBush(x, z, s));
 
-  // Outer decorative trees & rocks
   [
     [-7.5, -13], [6.8, -12.8], [8.5, -11.5],
     [-8.2, 12.2], [7.2, 12.5], [8.8, 11.2],
     [-9.5, -4], [9.5, -4], [-9.5, 4], [9.5, 4]
   ].forEach(([x, z]) => makeTree(x, z, 1.15));
-[
+
+  [
     [-2.5, -12.5], [3.2, -11.8], [-6.8, -10.8],
     [6.5, 10.8], [-6.5, 10.8],
     [-2.6, 1.45], [2.1, -0.96], [-6.8, -0.96], [6.7, 0.96]
   ].forEach(([x, z]) => makeRock(x, z, 0.48, 0.32, 0.42));
+} // <--- FIXED: Added missing closing brace for createArena()
 
 function init() {
   scene = new THREE.Scene();
@@ -526,7 +497,6 @@ function init() {
     120
   );
 
-  // High-angle Clash Royale camera framing the full arena
   camera.position.set(0, 33, 17.5);
   camera.lookAt(0, 0, 0.5);
 
@@ -539,6 +509,7 @@ function init() {
   world.appendChild(renderer.domElement);
 
   const hemi = new THREE.HemisphereLight("#e8f5ff", "#527b35", 2.0);
+  scene.add(hemi); // <--- FIXED: Added scene.add(hemi)
 
   const sun = new THREE.DirectionalLight("#fff6db", 2.2);
   sun.position.set(-10, 24, 12);
@@ -587,6 +558,7 @@ function animate() {
 
   renderer.render(scene, camera);
 }
+
 try {
   init();
 } catch (error) {
@@ -594,7 +566,6 @@ try {
   loading.style.display = "none";
   document.getElementById("error").style.display = "flex";
 }
-       
 </script>
 </body>
 </html>
