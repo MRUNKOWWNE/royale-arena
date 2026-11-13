@@ -289,16 +289,16 @@ header{
   <div id="cards-row">
    <div id="next-slot">
     NEXT
-    <div class="card" id="next-card">
-     <div class="cost-badge">5</div>
-     <div class="card-icon">💪</div>
+    <div class="card" id="next-card-ui">
+     <div class="cost-badge" id="next-cost">5</div>
+     <div class="card-icon" id="next-icon">💪</div>
     </div>
    </div>
    <div id="hand-slots">
-    <div class="card" data-cost="3"><div class="cost-badge">3</div><div class="card-icon">🏹</div><div class="card-name">Archers</div></div>
-    <div class="card" data-cost="3"><div class="cost-badge">3</div><div class="card-icon">🗡️</div><div class="card-name">Knight</div></div>
-    <div class="card" data-cost="5"><div class="cost-badge">5</div><div class="card-icon">🐴</div><div class="card-name">Prince</div></div>
-    <div class="card" data-cost="2"><div class="cost-badge">2</div><div class="card-icon">👺</div><div class="card-name">Goblins</div></div>
+    <div class="card" data-index="0"><div class="cost-badge" id="cost-0">3</div><div class="card-icon" id="icon-0">🏹</div><div class="card-name" id="name-0">Archers</div></div>
+    <div class="card" data-index="1"><div class="cost-badge" id="cost-1">3</div><div class="card-icon" id="icon-1">🗡️</div><div class="card-name" id="name-1">Knight</div></div>
+    <div class="card" data-index="2"><div class="cost-badge" id="cost-2">5</div><div class="card-icon" id="icon-2">🐴</div><div class="card-name" id="name-2">Prince</div></div>
+    <div class="card" data-index="3"><div class="cost-badge" id="cost-3">2</div><div class="card-icon" id="icon-3">👺</div><div class="card-name" id="name-3">Goblins</div></div>
    </div>
   </div>
  </div>
@@ -330,6 +330,26 @@ let water, waterLines = [], foamStrips = [], towerList = [];
 let deployedTroops = [];
 let elixir = 5, matchSeconds = 180;
 let clock = new THREE.Clock();
+
+// Deck state for true Clash Royale card rotation
+let deck = [
+  { name: "Archers", cost: 3, icon: "🏹" },
+  { name: "Knight", cost: 3, icon: "🗡️" },
+  { name: "Prince", cost: 5, icon: "🐴" },
+  { name: "Goblins", cost: 2, icon: "👺" },
+  { name: "Giant", cost: 5, icon: "💪" }
+];
+let selectedHandIndex = null;
+
+function updateDeckUI() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`cost-${i}`).textContent = deck[i].cost;
+    document.getElementById(`icon-${i}`).textContent = deck[i].icon;
+    document.getElementById(`name-${i}`).textContent = deck[i].name;
+  }
+  document.getElementById("next-cost").textContent = deck[4].cost;
+  document.getElementById("next-icon").textContent = deck[4].icon;
+}
 
 function material(color, roughness = 0.85) {
   return new THREE.MeshStandardMaterial({ color, roughness });
@@ -443,9 +463,7 @@ function makeTower(x, z, team, king = false) {
 
   box("tower-base-outer", 0, 0.1, 0, w + 0.48, 0.2, w + 0.48, "#726f68", group);
   box("tower-base-inner", 0, 0.24, 0, w + 0.26, 0.16, w + 0.26, stoneDark, group);
-
   box("tower-body", 0, h / 2 + 0.28, 0, w, h, w, stoneLight, group);
-
   box("tower-floor", 0, h + 0.16, 0, w - 0.36, 0.14, w - 0.36, "#54361c", group);
   box("tower-pedestal", 0, h + 0.28, 0, w * 0.42, 0.16, w * 0.42, teamDark, group);
   
@@ -460,17 +478,7 @@ function makeTower(x, z, team, king = false) {
 
   const bannerSide = isBlue ? -1 : 1;
   box("tower-trim", 0, h + 0.06, 0, w + 0.08, 0.26, w + 0.08, teamColor, group);
-  box(
-    "tower-banner",
-    0,
-    h * 0.6,
-    bannerSide * (w / 2 + 0.04),
-    w * 0.58,
-    h * 0.7,
-    0.07,
-    teamColor,
-    group
-  );
+  box("tower-banner", 0, h * 0.6, bannerSide * (w / 2 + 0.04), w * 0.58, h * 0.7, 0.07, teamColor, group);
 
   const shieldZ = bannerSide * (w / 2 + 0.09);
   box("emblem-base", 0, h * 0.6, shieldZ, 0.48, 0.42, 0.05, goldColor, group, 0.25);
@@ -480,18 +488,12 @@ function makeTower(x, z, team, king = false) {
 
   const poleX = w / 2 - 0.2;
   const poleZ = w / 2 - 0.2;
-  const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6),
-    material("#d4c39e", 0.8)
-  );
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), material("#d4c39e", 0.8));
   pole.position.set(poleX, h + 0.85, poleZ);
   pole.castShadow = true;
   group.add(pole);
 
-  const flag = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55, 0.32, 0.04),
-    material(teamColor, 0.7)
-  );
+  const flag = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.04), material(teamColor, 0.7));
   flag.position.set(poleX + 0.3, h + 1.02, poleZ);
   flag.castShadow = true;
   group.add(flag);
@@ -522,17 +524,7 @@ function makeBridge(x) {
 
   for (let i = 0; i < 7; i++) {
     const z = -1.05 + i * 0.35;
-    box(
-      "bridge-plank",
-      0,
-      0.22,
-      z,
-      1.95,
-      0.16,
-      0.3,
-      i % 2 === 0 ? "#9c6b3e" : "#875930",
-      group
-    );
+    box("bridge-plank", 0, 0.22, z, 1.95, 0.16, 0.3, i % 2 === 0 ? "#9c6b3e" : "#875930", group);
   }
 
   for (const side of [-0.95, 0.95]) {
@@ -557,33 +549,21 @@ function makeKing(parentGroup, isBlue, h) {
   const skinColor = "#f5d0b1";
   const crownColor = "#f5c842";
 
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.22, 0.28, 0.55, 8),
-    material(robeColor, 0.8)
-  );
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.55, 8), material(robeColor, 0.8));
   body.position.y = 0.28;
   body.castShadow = true;
   kingGroup.add(body);
 
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.16, 8, 8),
-    material(skinColor, 0.9)
-  );
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), material(skinColor, 0.9));
   head.position.y = 0.65;
   head.castShadow = true;
   kingGroup.add(head);
 
-  const crown = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.14, 0.12, 0.16, 6),
-    material(crownColor, 0.3)
-  );
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 0.16, 6), material(crownColor, 0.3));
   crown.position.y = 0.82;
   kingGroup.add(crown);
 
-  const mustache = new THREE.Mesh(
-    new THREE.BoxGeometry(0.22, 0.05, 0.06),
-    material("#2b1d0c", 0.9)
-  );
+  const mustache = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.05, 0.06), material("#2b1d0c", 0.9));
   mustache.position.set(0, 0.62, 0.14);
   kingGroup.add(mustache);
 }
@@ -598,57 +578,64 @@ function makePrincess(parentGroup, isBlue, h) {
   const skinColor = "#f5d0b1";
   const hairColor = "#e6a135";
 
-  const dress = new THREE.Mesh(
-    new THREE.ConeGeometry(0.22, 0.48, 8),
-    material(dressColor, 0.8)
-  );
+  const dress = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.48, 8), material(dressColor, 0.8));
   dress.position.y = 0.24;
   dress.castShadow = true;
   princessGroup.add(dress);
 
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13, 8, 8),
-    material(skinColor, 0.9)
-  );
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), material(skinColor, 0.9));
   head.position.y = 0.52;
   head.castShadow = true;
   princessGroup.add(head);
 
-  const hair = new THREE.Mesh(
-    new THREE.SphereGeometry(0.1, 8, 8),
-    material(hairColor, 0.8)
-  );
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), material(hairColor, 0.8));
   hair.position.set(0, 0.58, -0.04);
   princessGroup.add(hair);
 }
 
-function spawnTroop(x, z, troopName) {
+function spawnDeploymentRing(x, z) {
+  const ringGeo = new THREE.RingGeometry(0.2, 0.6, 24);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xffdf77, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(x, 0.03, z);
+  scene.add(ring);
+
+  let scale = 0.5;
+  const animRing = setInterval(() => {
+    scale += 0.15;
+    ring.scale.set(scale, scale, 1);
+    ring.material.opacity -= 0.15;
+    if (ring.material.opacity <= 0) {
+      clearInterval(animRing);
+      scene.remove(ring);
+    }
+  }, 35);
+}
+
+function spawnTroop(x, z, troopName, isBlue = true) {
   const group = new THREE.Group();
   group.position.set(x, 0, z);
   scene.add(group);
 
-  const color = troopName === "Knight" ? "#4a90e2" : troopName === "Goblins" ? "#7ed321" : troopName === "Prince" ? "#e67e22" : "#f1c40f";
+  const baseColor = isBlue ? "#348ceb" : "#e03c3c";
+  const color = troopName === "Knight" ? baseColor : troopName === "Goblins" ? "#7ed321" : troopName === "Prince" ? "#e67e22" : baseColor;
 
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.2, 0.25, 0.45, 8),
-    material(color, 0.7)
-  );
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.45, 8), material(color, 0.7));
   body.position.y = 0.22;
   body.castShadow = true;
   group.add(body);
 
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.14, 8, 8),
-    material("#f5d0b1", 0.8)
-  );
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), material("#f5d0b1", 0.8));
   head.position.y = 0.52;
   head.castShadow = true;
   group.add(head);
 
-  // Animation and movement metadata
-  deployedTroops.push({ group, speed: 0.035 });
+  spawnDeploymentRing(x, z);
 
-  // Spawn scale-up effect
+  // Blue marches up (-z), Red marches down (+z)
+  deployedTroops.push({ group, speed: isBlue ? 0.032 : -0.032, isBlue });
+
   group.scale.set(0.1, 0.1, 0.1);
   let scaleTime = 0;
   const growAnim = setInterval(() => {
@@ -659,10 +646,7 @@ function spawnTroop(x, z, troopName) {
 }
 
 function createArena() {
-  const outerGround = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 100),
-    material("#69ab3b")
-  );
+  const outerGround = new THREE.Mesh(new THREE.PlaneGeometry(80, 100), material("#69ab3b"));
   outerGround.rotation.x = -Math.PI / 2;
   outerGround.position.y = -0.05;
   outerGround.receiveShadow = true;
@@ -681,10 +665,7 @@ function createArena() {
       const isEven = (r + c) % 2 === 0;
       const tileColor = isEven ? "#87c94d" : "#79ba43";
 
-      const tile = new THREE.Mesh(
-        new THREE.PlaneGeometry(tileSize, tileSize),
-        material(tileColor)
-      );
+      const tile = new THREE.Mesh(new THREE.PlaneGeometry(tileSize, tileSize), material(tileColor));
       tile.rotation.x = -Math.PI / 2;
       tile.position.set(x, 0.01, z);
       tile.receiveShadow = true;
@@ -704,11 +685,7 @@ function createArena() {
 
   water = new THREE.Mesh(
     new THREE.PlaneGeometry(40, 1.85),
-    new THREE.MeshStandardMaterial({
-      color: "#22a7e0",
-      roughness: 0.25,
-      metalness: 0.1
-    })
+    new THREE.MeshStandardMaterial({ color: "#22a7e0", roughness: 0.25, metalness: 0.1 })
   );
   water.rotation.x = -Math.PI / 2;
   water.position.y = 0.06;
@@ -735,10 +712,7 @@ function createArena() {
   }
 
   [[-2.1, -0.35], [-1.3, 0.3], [1.4, 0.35], [2.2, -0.3]].forEach(([lx, lz]) => {
-    const pad = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.24, 0.24, 0.02, 12),
-      material("#52b830", 0.7)
-    );
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.02, 12), material("#52b830", 0.7));
     pad.position.set(lx, 0.08, lz);
     scene.add(pad);
   });
@@ -796,36 +770,31 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color("#69ab3b");
 
-  camera = new THREE.PerspectiveCamera(
-    36,
-    world.clientWidth / world.clientHeight,
-    0.1,
-    120
-  );
-
+  camera = new THREE.PerspectiveCamera(36, world.clientWidth / world.clientHeight, 0.1, 120);
   camera.position.set(0, 34, 18.5);
   camera.lookAt(0, 0, 1.8);
 
-  // Card selection and deployment raycasting
+  updateDeckUI();
+
+  // Card selection and deployment raycasting with cycling hand logic
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
-  let selectedCard = null;
 
   document.querySelectorAll("#hand-slots .card").forEach(card => {
     card.addEventListener("click", () => {
       document.querySelectorAll("#hand-slots .card").forEach(c => c.classList.remove("selected"));
       card.classList.add("selected");
-      selectedCard = card;
+      selectedHandIndex = parseInt(card.getAttribute("data-index"));
     });
   });
 
   world.addEventListener("pointerdown", (e) => {
-    if (!selectedCard) return;
-    const cost = parseInt(selectedCard.getAttribute("data-cost") || "3");
-    if (elixir < cost) return;
+    if (selectedHandIndex === null) return;
+    const playedCard = deck[selectedHandIndex];
+    if (elixir < playedCard.cost) return;
 
     // Deduct elixir
-    elixir = Math.max(0, elixir - cost);
+    elixir = Math.max(0, elixir - playedCard.cost);
     document.getElementById("elixir-num").textContent = Math.floor(elixir);
     document.getElementById("elixir-fill").style.width = `${elixir * 10}%`;
 
@@ -840,12 +809,20 @@ function init() {
 
     // Restrict deployment to Blue Kingdom half (z > 0.5)
     if (targetPos && targetPos.z > 0.5 && targetPos.z < 9.5 && Math.abs(targetPos.x) < 6.5) {
-      spawnTroop(targetPos.x, targetPos.z, selectedCard.querySelector(".card-name").textContent);
-      selectedCard.classList.remove("selected");
-      selectedCard = null;
+      spawnTroop(targetPos.x, targetPos.z, playedCard.name, true);
+
+      // Cycle deck: swap played card with the next card in queue
+      const nextCard = deck[4];
+      deck[4] = playedCard;
+      deck[selectedHandIndex] = nextCard;
+      updateDeckUI();
+
+      document.querySelectorAll("#hand-slots .card").forEach(c => c.classList.remove("selected"));
+      selectedHandIndex = null;
     }
   });
 
+  // Timer & Elixir Regeneration loop + Enemy AI Spawning
   setInterval(() => {
     if (matchSeconds > 0) {
       matchSeconds--;
@@ -861,6 +838,13 @@ function init() {
       document.getElementById("elixir-badge").style.left = `${Math.max(8, Math.min(92, elixir * 10))}%`;
     }
   }, 280);
+
+  // Red Team AI spawner every 10 seconds
+  setInterval(() => {
+    const aiLanes = [-4.65, 4.65];
+    const chosenX = aiLanes[Math.floor(Math.random() * aiLanes.length)];
+    spawnTroop(chosenX, -6.5, "Knight", false);
+  }, 10000);
  
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -908,11 +892,7 @@ function animate() {
   const t = clock.getElapsedTime();
 
   if (water) {
-    water.material.color.setHSL(
-      0.55,
-      0.75,
-      0.52 + Math.sin(t * 2) * 0.035
-    );
+    water.material.color.setHSL(0.55, 0.75, 0.52 + Math.sin(t * 2) * 0.035);
     water.position.y = 0.06 + Math.sin(t * 1.5) * 0.015;
   }
 
@@ -927,13 +907,13 @@ function animate() {
     foam.position.z = dir * (0.83 + Math.sin(t * 2.5) * 0.025);
   });
 
-  // Advance deployed troops forward toward enemy side (negative z)
+  // Advance deployed troops forward
   deployedTroops.forEach((troop, index) => {
     troop.group.position.z -= troop.speed;
-    // Optional bobbing motion
     troop.group.position.y = Math.abs(Math.sin(t * 12 + index)) * 0.08;
-    // Remove if they cross into enemy base
-    if (troop.group.position.z < -10) {
+
+    // Remove troops if they reach either end
+    if (troop.group.position.z < -11 || troop.group.position.z > 11) {
       scene.remove(troop.group);
       deployedTroops.splice(index, 1);
     }
