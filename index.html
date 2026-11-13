@@ -99,122 +99,253 @@ function roundBox(x,y,w,h,r,color){
 }
 
 function drawArena(){
- // Main grass
- let grass=ctx.createLinearGradient(0,0,600,900);
- grass.addColorStop(0,"#83c95b");
- grass.addColorStop(.5,"#65a747");
- grass.addColorStop(1,"#4d963d");
- ctx.fillStyle=grass;
+
+ // Helpers for 3D cartoon terrain
+ function gradient(x,y,w,h,c1,c2){
+  let g=ctx.createLinearGradient(x,y,x+w,y+h);
+  g.addColorStop(0,c1);
+  g.addColorStop(1,c2);
+  return g;
+ }
+
+ function ellipse(x,y,rx,ry,color){
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);
+  ctx.fill();
+ }
+
+ // 1. Deep green battlefield background
+ ctx.fillStyle=gradient(0,0,600,900,"#a0d66a","#397d36");
  ctx.fillRect(0,0,W,H);
 
- // Grass texture
- for(let y=20;y<H;y+=42){
-  for(let x=20;x<W;x+=45){
-   ctx.fillStyle=(Math.floor(x/45+y/42)%2===0)?"#ffffff0b":"#173b170b";
-   ctx.fillRect(x,y,22,12);
-  }
+ // 2. Raised outer arena border
+ ctx.fillStyle="#49331f";
+ ctx.fillRect(0,0,600,900);
+
+ ctx.fillStyle=gradient(0,0,600,900,"#b98a4c","#75502e");
+ ctx.fillRect(9,9,582,882);
+
+ ctx.fillStyle=gradient(0,0,600,900,"#86bd53","#4b8b39");
+ ctx.fillRect(18,18,564,864);
+
+ // 3. Main grass field
+ ctx.fillStyle=gradient(0,0,0,900,"#91ce5e","#4d983f");
+ ctx.fillRect(25,25,550,850);
+
+ // Soft grass patches
+ for(let i=0;i<95;i++){
+  let x=(i*137+43)%550+25;
+  let y=(i*193+61)%850+25;
+
+  if(y>390&&y<510)continue;
+
+  ellipse(x,y,13+(i%4)*3,7+(i%3)*2,
+   i%2===0?"#b5e57b35":"#245d2830");
  }
 
- // Battle lanes
- roundBox(35,0,230,H,12,"#ffffff0b");
- roundBox(335,0,230,H,12,"#ffffff0b");
+ // Small grass blades
+ ctx.strokeStyle="#d4ed8c88";
+ ctx.lineWidth=2;
 
- // Decorative side stones
- for(let y=30;y<900;y+=90){
-  roundBox(8,y,18,42,5,"#98784a");
-  roundBox(574,y,18,42,5,"#98784a");
-  roundBox(11,y+4,12,33,3,"#c6a36b");
-  roundBox(577,y+4,12,33,3,"#c6a36b");
- }
+ for(let i=0;i<65;i++){
+  let x=(i*79+22)%550+25;
+  let y=(i*127+37)%850+25;
 
- // River banks
- ctx.fillStyle="#b9d17a";
- ctx.fillRect(0,405,W,13);
- ctx.fillRect(0,482,W,13);
+  if(y>390&&y<510)continue;
 
- // River
- let water=ctx.createLinearGradient(0,415,0,480);
- water.addColorStop(0,"#47b9df");
- water.addColorStop(.5,"#1686c0");
- water.addColorStop(1,"#075b94");
- ctx.fillStyle=water;
- ctx.fillRect(0,418,W,64);
-
- // Water highlights
- ctx.strokeStyle="#b8edff77";
- ctx.lineWidth=3;
- for(let x=20;x<600;x+=75){
   ctx.beginPath();
-  ctx.moveTo(x,432);
-  ctx.lineTo(x+28,432);
-  ctx.moveTo(x+22,465);
-  ctx.lineTo(x+58,465);
+  ctx.moveTo(x,y+5);
+  ctx.lineTo(x-3,y-3);
+  ctx.moveTo(x,y+5);
+  ctx.lineTo(x+4,y-4);
   ctx.stroke();
  }
 
- // Bridges
- [65,460].forEach(x=>{
-  ctx.fillStyle="#00000033";
-  ctx.fillRect(x-5,410,80,83);
+ // 4. Decorative lane borders
+ ctx.fillStyle="#36743b";
+ ctx.fillRect(25,25,8,850);
+ ctx.fillRect(567,25,8,850);
 
-  roundBox(x,409,75,83,5,"#644326");
-  roundBox(x+5,411,65,78,3,"#bd8950");
-
-  for(let i=0;i<6;i++){
-   ctx.fillStyle=i%2===0?"#d6a16a":"#b98046";
-   ctx.fillRect(x+7,414+i*12,61,9);
-   ctx.strokeStyle="#80542e";
-   ctx.lineWidth=2;
-   ctx.strokeRect(x+7,414+i*12,61,9);
-  }
-
-  // Bridge railings
-  roundBox(x-4,405,8,84,3,"#754b2b");
-  roundBox(x+71,405,8,84,3,"#754b2b");
-  for(let i=0;i<5;i++){
-   roundBox(x-3,405+i*19,7,8,2,"#e2b477");
-   roundBox(x+71,405+i*19,7,8,2,"#e2b477");
-  }
- });
-
- // Arena center decoration
- ctx.strokeStyle="#ffffff35";
+ // Soft lane markings
+ ctx.strokeStyle="#d9f3a033";
  ctx.lineWidth=3;
- ctx.setLineDash([12,14]);
+ ctx.setLineDash([16,22]);
+
  ctx.beginPath();
- ctx.moveTo(300,0);
- ctx.lineTo(300,900);
+ ctx.moveTo(300,30);
+ ctx.lineTo(300,870);
  ctx.stroke();
+
  ctx.setLineDash([]);
 
- // Decorative stones and bushes
- for(let i=0;i<12;i++){
-  let x=(i*83+31)%580+10;
-  let y=(i*137+55)%880+10;
+ // 5. River banks with dimensional edges
+ ctx.fillStyle="#806039";
+ ctx.fillRect(20,397,560,111);
 
-  if(y>385&&y<505)continue;
+ ctx.fillStyle="#d2b66e";
+ ctx.fillRect(20,397,560,12);
 
-  ctx.fillStyle="#00000020";
+ ctx.fillStyle="#a6c966";
+ ctx.fillRect(20,409,560,5);
+
+ ctx.fillStyle="#d2b66e";
+ ctx.fillRect(20,496,560,12);
+
+ ctx.fillStyle="#719d47";
+ ctx.fillRect(20,490,560,6);
+
+ // 6. Deep blue river
+ ctx.fillStyle=gradient(0,410,0,85,"#53c8eb","#075a9d");
+ ctx.fillRect(20,414,560,79);
+
+ // River depth shadows
+ ctx.fillStyle="#064f86";
+ ctx.fillRect(20,478,560,15);
+
+ // Water reflections
+ for(let i=0;i<16;i++){
+  let x=(i*71+20)%550+25;
+  let y=421+(i*19)%62;
+
+  ctx.strokeStyle=i%2===0?"#b8f2ff99":"#ffffff55";
+  ctx.lineWidth=3;
+
   ctx.beginPath();
-  ctx.ellipse(x+3,y+5,13,7,0,0,Math.PI*2);
+  ctx.moveTo(x,y);
+  ctx.quadraticCurveTo(x+12,y-5,x+30,y);
+  ctx.stroke();
+ }
+
+ // 7. Two raised wooden bridges
+ function bridge(x){
+
+  // Bridge shadow
+  ctx.fillStyle="#00000055";
+  ctx.beginPath();
+  ctx.roundRect(x-7,405,89,105,8);
   ctx.fill();
 
-  ctx.fillStyle=i%2===0?"#347d39":"#478c3c";
+  // Stone supports
+  roundBox(x-5,411,85,88,7,"#72553a");
+  roundBox(x,413,75,82,5,"#a77b47");
+
+  // Wooden deck
+  ctx.save();
+  ctx.shadowColor="#00000066";
+  ctx.shadowBlur=9;
+  ctx.shadowOffsetY=5;
+
+  roundBox(x+4,415,67,76,4,"#704321");
+  ctx.restore();
+
+  // Planks
+  for(let i=0;i<6;i++){
+   let py=417+i*12;
+
+   let wood=gradient(x,py,0,10,
+    i%2===0?"#e5b875":"#bd8247",
+    i%2===0?"#a96c36":"#85502d"
+   );
+
+   roundBox(x+7,py,61,10,2,wood);
+
+   ctx.strokeStyle="#714629";
+   ctx.lineWidth=1.5;
+   ctx.strokeRect(x+7,py,61,10);
+
+   // Wooden nails
+   ellipse(x+13,py+5,1.5,1.5,"#47301f");
+   ellipse(x+62,py+5,1.5,1.5,"#47301f");
+  }
+
+  // Raised bridge railings
+  roundBox(x-4,408,7,82,3,"#684126");
+  roundBox(x+72,408,7,82,3,"#684126");
+
+  // Top rail highlights
+  roundBox(x-5,407,9,6,3,"#e5b779");
+  roundBox(x+71,407,9,6,3,"#e5b779");
+
+  for(let i=0;i<5;i++){
+   let py=414+i*16;
+   roundBox(x-3,py,6,9,2,"#d49a57");
+   roundBox(x+73,py,6,9,2,"#d49a57");
+  }
+ }
+
+ bridge(65);
+ bridge(460);
+
+ // 8. Stone decorations around the map
+ function rock(x,y,size){
+  ellipse(x+3,y+5,size*1.2,size*.7,"#00000035");
+
+  ctx.fillStyle="#756d5b";
   ctx.beginPath();
-  ctx.arc(x,y,10,0,Math.PI*2);
-  ctx.arc(x+9,y+3,8,0,Math.PI*2);
-  ctx.arc(x-8,y+4,7,0,Math.PI*2);
+  ctx.moveTo(x-size,y);
+  ctx.lineTo(x-size*.55,y-size*.8);
+  ctx.lineTo(x+size*.45,y-size);
+  ctx.lineTo(x+size,y-size*.25);
+  ctx.lineTo(x+size*.8,y+size*.6);
+  ctx.lineTo(x-size*.5,y+size*.7);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle="#b8ad91";
+  ctx.beginPath();
+  ctx.moveTo(x-size*.55,y-size*.8);
+  ctx.lineTo(x+size*.45,y-size);
+  ctx.lineTo(x+size*.8,y-size*.25);
+  ctx.lineTo(x,y-size*.15);
+  ctx.closePath();
   ctx.fill();
  }
 
- // Arena border
- ctx.strokeStyle="#593d25";
- ctx.lineWidth=12;
- ctx.strokeRect(5,5,590,890);
- ctx.strokeStyle="#d1a568";
- ctx.lineWidth=3;
- ctx.strokeRect(12,12,576,876);
+ rock(47,350,13);
+ rock(550,350,15);
+ rock(45,545,12);
+ rock(552,550,14);
+ rock(70,790,10);
+ rock(530,790,11);
+
+ // 9. Cartoon bushes
+ function bush(x,y){
+  ellipse(x+3,y+7,19,9,"#00000035");
+
+  ellipse(x,y,15,12,"#246d35");
+  ellipse(x-10,y+2,11,10,"#328b3d");
+  ellipse(x+10,y+1,12,11,"#3b9b42");
+  ellipse(x-3,y-7,11,10,"#65b94b");
+  ellipse(x+8,y-6,9,8,"#77c957");
+ }
+
+ bush(52,160);
+ bush(548,160);
+ bush(48,735);
+ bush(550,735);
+
+ // 10. Little flowers
+ for(let i=0;i<12;i++){
+  let x=(i*113+70)%520+40;
+  let y=(i*167+100)%850+20;
+
+  if(y>390&&y<510)continue;
+
+  ellipse(x,y,3,3,i%2===0?"#fff1a3":"#ffffff");
+  ellipse(x+4,y+3,2,2,"#e9a3d4");
+ }
+
+ // 11. Final arena edge highlights
+ ctx.strokeStyle="#e6c486";
+ ctx.lineWidth=4;
+ ctx.strokeRect(10,10,580,880);
+
+ ctx.strokeStyle="#315e2b";
+ ctx.lineWidth=5;
+ ctx.strokeRect(22,22,556,856);
 }
+
 
 function drawTower(t){
  let blue=t.team==="blue";
