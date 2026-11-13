@@ -335,57 +335,73 @@ function makeBridge(x){
  group.position.x=x;
  scene.add(group);
 
- // Bridge supports
- box("bridge-shadow",0,.08,0,2.6,.15,3.2,"#62412a",group);
+ // Stone entrance foundations
+ for(const z of [-1.85,1.85]){
+  box("bridge-stone-base",0,.18,z,3.2,.35,.9,"#77736b",group);
 
- // Deck
- box("bridge-deck",0,.3,0,2.35,.25,3,"#a66d38",group);
+  for(let side of [-1,1]){
+   box("bridge-stone-edge",side*1.42,.32,z, .28,.45,.85,"#aaa49a",group);
+  }
+ }
 
- // Individual wooden planks
- for(let i=0;i<9;i++){
-  const z=-1.35+i*.34;
+ // Strong wooden foundation
+ box("bridge-shadow",0,.08,0,3.2,.2,3.8,"#493522",group);
+
+ // Wider wooden deck
+ box("bridge-deck",0,.32,0,3,.3,3.5,"#95602f",group);
+
+ // Individual wide wooden planks
+ for(let i=0;i<11;i++){
+  const z=-1.55+i*.31;
 
   box(
    "bridge-plank",
-   0,.45,z,
-   2.3,.13,.3,
-   i%2===0?"#d49a59":"#bd8043",
+   0,.51,z,
+   2.95,.13,.27,
+   i%2===0?"#d49a59":"#b77b40",
    group
   );
 
-  // Nails
+  // Metal nails
   for(const side of [-1,1]){
    const nail=new THREE.Mesh(
-    new THREE.CylinderGeometry(.035,.035,.025,8),
+    new THREE.CylinderGeometry(.045,.045,.025,8),
     material("#42352b")
    );
+
    nail.rotation.x=Math.PI/2;
-   nail.position.set(side*1.02,.53,z);
+   nail.position.set(side*1.32,.59,z);
    group.add(nail);
   }
  }
 
- // Side railings
+ // Strong side railings
  for(const side of [-1,1]){
-  box("bridge-rail",side*1.18,.85,0,.16,.8,3.1,"#714523",group);
+  box(
+   "bridge-rail",
+   side*1.55,.78,0,
+   .2,.65,3.65,
+   "#704523",
+   group
+  );
 
-  for(let i=0;i<5;i++){
+  for(let i=0;i<6;i++){
    box(
     "bridge-post",
-    side*1.18,.95,-1.35+i*.67,
-    .23,.95,.23,
+    side*1.55,.9,-1.5+i*.6,
+    .28,.9,.28,
     "#d4a060",
     group
    );
   }
  }
 
- // Bridge underside supports
+ // Heavy underside supports
  for(const side of [-1,1]){
   box(
    "bridge-support",
-   side*.7,.12,0,
-   .25,.3,3,
+   side*.95,.12,0,
+   .3,.35,3.5,
    "#68462d",
    group
   );
