@@ -483,17 +483,6 @@ function createArena(){
   );
  }
 
-
- // Arena outer stone border
- for(const x of [-7,7]){
-  box("arena-side-wall",x,.25,0,.45,.8,22.5,"#80603e");
-  box("arena-side-highlight",x,.7,0,.5,.12,22.5,"#c5a06b");
- }
-
- for(const z of [-11,11]){
-  box("arena-end-wall",0,.25,z,14,.8,.45,"#80603e");
- }
-
  // River bed — wider channel
  box("river-bed",0,-.04,0,14,.22,2.5,"#15577c");
 
