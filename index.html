@@ -409,18 +409,19 @@ function makeBridge(x){
 }
 
 function createArena(){
- // Ground
+
+ // Ground foundation
  const ground=new THREE.Mesh(
-  new THREE.BoxGeometry(14,.45,22),
-  material("#568e3e")
+  new THREE.BoxGeometry(14,.55,22),
+  material("#66513b")
  );
- ground.position.y=-.25;
+ ground.position.y=-.3;
  ground.receiveShadow=true;
  scene.add(ground);
 
- // Grass top
+ // Main grass surface
  const grass=new THREE.Mesh(
-  new THREE.PlaneGeometry(13.8,21.8),
+  new THREE.PlaneGeometry(13.8,21.8,32,48),
   material("#75b94c")
  );
  grass.rotation.x=-Math.PI/2;
@@ -428,21 +429,60 @@ function createArena(){
  grass.receiveShadow=true;
  scene.add(grass);
 
- // Decorative grass patches
- for(let i=0;i<90;i++){
+ // Natural grass variations
+ for(let i=0;i<150;i++){
   const x=Math.sin(i*17.3)*5.9;
   const z=Math.cos(i*9.7)*9.5;
 
-  if(Math.abs(z)<1.6)continue;
+  if(Math.abs(z)<1.8)continue;
 
   const patch=new THREE.Mesh(
-   new THREE.CircleGeometry(.15+(i%4)*.08,7),
-   material(i%2===0?"#91d45c":"#579e40")
+   new THREE.CircleGeometry(.13+(i%5)*.07,8),
+   material(
+    i%3===0?"#91d45c":
+    i%3===1?"#579e40":"#6eae47"
+   )
   );
+
   patch.rotation.x=-Math.PI/2;
   patch.position.set(x,.025,z);
   scene.add(patch);
  }
+
+ // Stone perimeter — left and right
+ for(const x of [-7.05,7.05]){
+  box(
+   "arena-stone-wall",
+   x,.12,0,
+   .45,.75,22,
+   "#827b70"
+  );
+
+  box(
+   "arena-wall-top",
+   x,.53,0,
+   .55,.18,22,
+   "#b5aa98"
+  );
+ }
+
+ // Stone perimeter — back and front
+ for(const z of [-11.05,11.05]){
+  box(
+   "arena-stone-wall",
+   0,.12,z,
+   14,.75,.45,
+   "#827b70"
+  );
+
+  box(
+   "arena-wall-top",
+   0,.53,z,
+   14,.18,.55,
+   "#b5aa98"
+  );
+ }
+
 
  // Arena outer stone border
  for(const x of [-7,7]){
