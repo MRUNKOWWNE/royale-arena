@@ -519,10 +519,10 @@ function init(){
   100
  );
  
-// Wider battlefield camera
-camera.position.set(0,25,35);
+ // Steeper, battlefield-focused camera
+camera.position.set(0,30,32);
 camera.lookAt(0,0,0);
-camera.fov=43;
+camera.fov=41;
 camera.updateProjectionMatrix();
 
  renderer=new THREE.WebGLRenderer({
